@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Cadet Trainer — 10‑Codes Flashcards, Quiz & Matching</title>
+<title>Cadet Trainer — 10-Codes Flashcards, Quiz & Matching</title>
 <style>
   :root{
     --bg:#0e1220;
@@ -66,7 +66,7 @@
 <div id="root-app" class="app">
   <aside class="sidebar">
     <h1>Cadet Trainer</h1>
-    <p class="sub">Practice 10‑codes and case laws. Flashcards, quiz, or matching.</p>
+    <p class="sub">Practice 10-codes and case laws. Flashcards, quiz, or matching.</p>
 
     <label class="sub">Theme</label>
     <select class="select" id="theme">
@@ -86,9 +86,13 @@
     <div class="stat"><span>Seen</span><strong id="seen">0</strong></div>
     <div class="stat"><span>Correct</span><strong id="correct">0</strong></div>
     <div class="stat"><span>Streak</span><strong id="streak">0</strong></div>
+    <!-- NEW: All-time streak tile -->
+    <div class="stat"><span>All-time Streak 🏆</span><strong id="alltime">0</strong></div>
 
     <button class="btn ghost" id="shuffleBtn" style="width:100%;margin-top:12px">Shuffle Deck</button>
     <button class="btn ghost" id="resetBtn" style="width:100%;margin-top:8px">Reset Stats</button>
+    <!-- NEW: Reset all-time button -->
+    <button class="btn ghost" id="resetAllBtn" style="width:100%;margin-top:8px">Reset All-time Streak</button>
   </aside>
 
   <main class="panel">
@@ -220,8 +224,15 @@ function $(id){return document.getElementById(id)}
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 
 let deck=[...CODES]; let index=0;
-let stats=JSON.parse(localStorage.getItem('cadet_stats')||'{"seen":0,"correct":0,"streak":0}');
-function setStats(){ $('seen').textContent=stats.seen; $('correct').textContent=stats.correct; $('streak').textContent=stats.streak; localStorage.setItem('cadet_stats',JSON.stringify(stats)); }
+// UPDATED: include alltime in saved stats
+let stats=JSON.parse(localStorage.getItem('cadet_stats')||'{"seen":0,"correct":0,"streak":0,"alltime":0}');
+function setStats(){
+  $('seen').textContent=stats.seen;
+  $('correct').textContent=stats.correct;
+  $('streak').textContent=stats.streak;
+  if($('alltime')) $('alltime').textContent = stats.alltime||0;
+  localStorage.setItem('cadet_stats',JSON.stringify(stats));
+}
 
 $('theme').onchange=()=>{ document.body.setAttribute('data-theme',$('theme').value) };
 $('mode').onchange=()=> switchMode($('mode').value);
@@ -237,16 +248,23 @@ function fitText(el,max,min){
   }
 }
 flipper.addEventListener('click',()=> flipper.classList.toggle('flipped'));
-$('markRight').onclick=()=>{ stats.seen++; stats.correct++; stats.streak++; setStats(); nextCard(); };
+$('markRight').onclick=()=>{ 
+  stats.seen++; stats.correct++; stats.streak++;
+  // NEW: bump all-time record if needed
+  if(stats.streak > (stats.alltime||0)) stats.alltime = stats.streak;
+  setStats(); nextCard(); 
+};
 $('markWrong').onclick=()=>{ stats.seen++; stats.streak=0; setStats(); nextCard(); };
 function nextCard(){ index=(index+1)%deck.length; updateCard(); }
 $('shuffleBtn').onclick=()=>{ deck=shuffle(deck); index=0; updateCard(); };
-$('resetBtn').onclick=()=>{ stats={seen:0,correct:0,streak:0}; setStats(); };
+$('resetBtn').onclick=()=>{ stats={seen:0,correct:0,streak:0,alltime:stats.alltime||0}; setStats(); };
+// NEW: reset all-time handler
+$('resetAllBtn').onclick=()=>{ stats.alltime=0; setStats(); };
 
 // QUIZ
 let quizQ=[], qi=0, qScore=0, qLocked=false;
 function startQuiz(){ quizQ = shuffle([...CODES]).slice(0,10); qi=0; qScore=0; qLocked=false; renderQ(); }
-function renderQ(){ const q=quizQ[qi]; $('qtext').textContent=`What does ${q.c} mean?`; $('qcount').textContent=`Q${qi+1}/${quizQ.length}`; $('qscore').textContent=`${qScore} correct`; const opts=shuffle([q,...shuffle(CODES.filter(x=>x!==q)).slice(0,3)]).map(o=>o.m); const box=$('choices'); box.innerHTML=''; qLocked=false; opts.forEach(txt=>{ const d=document.createElement('div'); d.className='choice'; d.textContent=txt; d.onclick=()=>{ if(qLocked) return; qLocked=true; const ok=txt===q.m; d.classList.add(ok?'correct':'wrong'); stats.seen++; if(ok){ stats.correct++; stats.streak++; qScore++; } else { stats.streak=0; [...box.children].forEach(el=>{ if(el.textContent===q.m) el.classList.add('correct'); }); } setStats(); }; box.appendChild(d); }); }
+function renderQ(){ const q=quizQ[qi]; $('qtext').textContent=`What does ${q.c} mean?`; $('qcount').textContent=`Q${qi+1}/${quizQ.length}`; $('qscore').textContent=`${qScore} correct`; const opts=shuffle([q,...shuffle(CODES.filter(x=>x!==q)).slice(0,3)]).map(o=>o.m); const box=$('choices'); box.innerHTML=''; qLocked=false; opts.forEach(txt=>{ const d=document.createElement('div'); d.className='choice'; d.textContent=txt; d.onclick=()=>{ if(qLocked) return; qLocked=true; const ok=txt===q.m; d.classList.add(ok?'correct':'wrong'); stats.seen++; if(ok){ stats.correct++; stats.streak++; if(stats.streak > (stats.alltime||0)) stats.alltime = stats.streak; qScore++; } else { stats.streak=0; [...box.children].forEach(el=>{ if(el.textContent===q.m) el.classList.add('correct'); }); } setStats(); }; box.appendChild(d); }); }
 $('nextQ').onclick=()=>{ if(qi<quizQ.length-1){ qi++; renderQ(); } else { startQuiz(); } };
 $('restartQuiz').onclick=startQuiz;
 
@@ -270,6 +288,8 @@ function startMatch(){
       const isMatch = (sel.dataset.key===d.dataset.key && sel.dataset.side!==d.dataset.side);
       if(isMatch){
         stats.correct++; stats.streak++;
+        // NEW: bump all-time record if needed
+        if(stats.streak > (stats.alltime||0)) stats.alltime = stats.streak;
         d.classList.add('correct'); sel.classList.add('correct');
         solved.add(d.dataset.key);
         $('mleft').textContent = (pairs.length - solved.size) + ' pairs left';
@@ -294,7 +314,7 @@ function toast(msg){
 // CASE LAW QUIZ
 let caseQ=[], ci=0, cScore=0, cLocked=false;
 function startCase(){ caseQ=shuffle([...CASES]).slice(0,10); ci=0; cScore=0; cLocked=false; renderCase(); }
-function renderCase(){ const q=caseQ[ci]; $('cqtext').textContent=q.sum; $('cqcount').textContent=`Case ${ci+1}/${caseQ.length}`; $('cqscore').textContent=`${cScore} correct`; const opts=shuffle([q,...shuffle(CASES.filter(x=>x!==q)).slice(0,3)]).map(o=>o.name); const box=$('cchoices'); box.innerHTML=''; cLocked=false; opts.forEach(txt=>{ const d=document.createElement('div'); d.className='choice'; d.textContent=txt; d.onclick=()=>{ if(cLocked) return; cLocked=true; const ok=txt===q.name; d.classList.add(ok?'correct':'wrong'); stats.seen++; if(ok){ stats.correct++; stats.streak++; cScore++; } else { stats.streak=0; [...box.children].forEach(el=>{ if(el.textContent===q.name) el.classList.add('correct'); }); } setStats(); }; box.appendChild(d); }); }
+function renderCase(){ const q=caseQ[ci]; $('cqtext').textContent=q.sum; $('cqcount').textContent=`Case ${ci+1}/${caseQ.length}`; $('cqscore').textContent=`${cScore} correct`; const opts=shuffle([q,...shuffle(CASES.filter(x=>x!==q)).slice(0,3)]).map(o=>o.name); const box=$('cchoices'); box.innerHTML=''; cLocked=false; opts.forEach(txt=>{ const d=document.createElement('div'); d.className='choice'; d.textContent=txt; d.onclick=()=>{ if(cLocked) return; cLocked=true; const ok=txt===q.name; d.classList.add(ok?'correct':'wrong'); stats.seen++; if(ok){ stats.correct++; stats.streak++; if(stats.streak > (stats.alltime||0)) stats.alltime = stats.streak; cScore++; } else { stats.streak=0; [...box.children].forEach(el=>{ if(el.textContent===q.name) el.classList.add('correct'); }); } setStats(); }; box.appendChild(d); }); }
 $('nextCase').onclick=()=>{ if(ci<caseQ.length-1){ ci++; renderCase(); } else { startCase(); } };
 $('restartCase').onclick=startCase;
 
