@@ -251,24 +251,25 @@ const CASES = [
   {name:'Brendlin v. California', sum:'A lawful traffic stop detains passengers as well as the driver; no one is free to depart without police permission.'}
 ];
 
-// NEW: contraband items (only what you provided)
+//contraband items
 const CONTRABAND = [
   'red decryption key','blue decryption key','green decryption key',
   'chip','raspberry chip','fake plates','meth table','catalytic converter','pager'
 ];
 
-// NEW: negotiations steps (exact order you gave)
+// negotiations steps
 const STEPS = [
-  'go to the door',
-  'introduce yourself',
-  'make contact with the robber',
-  'ask them how many inside and outside',
-  'ask them to speak to the hostage',
-  'see if hostage has been treated okay do they need medical water or food',
-  'get demands from the robbers',
-  'relay information to scene command',
-  'relay information to robbers from scene command',
-  'wait for scene command to set up a pursuit line up'
+  'Go to the door',
+  'Introduce yourself',
+  'Make contact with the robber',
+  'Get proof of robbery',
+  'Ask them how many inside and outside',
+  'Ask them to speak to the hostage',
+  'See if hostage has been treated okay, do they need medical water or food?',
+  'Get demands from the robbers',
+  'Relay information to scene command',
+  'Relay information to robbers from scene command',
+  'Wait for scene command to set up a pursuit line up'
 ];
 
 function $(id){return document.getElementById(id)}
@@ -385,7 +386,7 @@ function renderCase(){ const q=caseQ[ci]; $('cqtext').textContent=q.sum; $('cqco
 $('nextCase').onclick=()=>{ if(ci<caseQ.length-1){ ci++; renderCase(); } else { startCase(); } };
 $('restartCase').onclick=startCase;
 
-// NEW: CONTRABAND QUIZ (Yes/No)
+// CONTRABAND QUIZ (Yes/No)
 let bQ=[], bi=0, bScore=0, bLocked=false;
 function startContra(){ bQ = shuffle(CONTRABAND.map(name=>({name}))).slice(0,10); bi=0; bScore=0; bLocked=false; renderContra(); }
 function renderContra(){
@@ -411,7 +412,7 @@ function renderContra(){
 $('nextContra').onclick=()=>{ if(bi<bQ.length-1){ bi++; renderContra(); } else { startContra(); } };
 $('restartContra').onclick=startContra;
 
-// NEW: NEGOTIATIONS QUIZ (order-based MCQ)
+//NEGOTIATIONS QUIZ
 let nI=0, nScore=0, nLocked=false;
 function startNeg(){ nI=0; nScore=0; nLocked=false; renderNeg(); }
 function renderNeg(){
@@ -458,4 +459,5 @@ function autoFit(el, maxPx=34, minPx=14){
 </script>
 </body>
 </html>
+
 
