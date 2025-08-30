@@ -480,7 +480,7 @@ function startContra(){
 }
 function renderContra(){
   const q=bQ[bi];
-  $('btext').textContent = `Is possession of "${q.name}" considered contraband?`;
+  $('btext').textContent = `If your suspect is found with a "${q.name}" do you confiscate it?`;
   $('bcount').textContent=`Q${bi+1}/${bQ.length}`;
   $('bscore').textContent=`${bScore} correct`;
   const box=$('bchoices'); box.innerHTML=''; bLocked=false;
@@ -614,3 +614,4 @@ function autoFit(el, maxPx=34, minPx=14){
 </script>
 </body>
 </html>
+
