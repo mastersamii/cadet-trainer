@@ -6,19 +6,10 @@
 <title>Cadet Trainer — 10-Codes Flashcards, Quiz & Matching</title>
 <style>
   :root{
-    --bg:#0e1220;
-    --panel:#151a2b;
-    --ink:#e8eaf6;
-    --muted:#9aa3b2;
-    --accent:#9aa3b2;
-    --accent-strong:#cfd4df;
-    --card:#11172a;
-    --success:#22a05d;
-    --danger:#d64545;
-    --radius:22px;
-    --shadow:0 18px 50px rgba(0,0,0,.35);
+    --bg:#0e1220; --panel:#151a2b; --ink:#e8eaf6; --muted:#9aa3b2;
+    --accent:#9aa3b2; --accent-strong:#cfd4df; --card:#11172a;
+    --success:#22a05d; --danger:#d64545; --radius:22px; --shadow:0 18px 50px rgba(0,0,0,.35);
   }
-
   [data-theme="sasp"]{ --bg:#0e1220; --panel:#151a2b; --ink:#e8eaf6; --muted:#9aa3b2; --accent:#9aa3b2; --accent-strong:#cfd4df; --card:#11172a; }
   [data-theme="bcso"]{ --bg:#17140f; --panel:#1f1a12; --ink:#fff8e6; --muted:#d2c5aa; --accent:#c7a976; --accent-strong:#efd9a7; --card:#19140e; }
   [data-theme="highway"]{ --bg:#071226; --panel:#0b1d35; --ink:#e6f2ff; --muted:#a8c2e5; --accent:#2e6ac9; --accent-strong:#a7c8ff; --card:#0a1730; }
@@ -31,40 +22,59 @@
   .select{width:100%;padding:12px 14px;background:var(--card);color:var(--ink);border:1px solid rgba(255,255,255,.08);border-radius:14px;margin:8px 0 14px;cursor:pointer;}
   .stat{display:flex;justify-content:space-between;background:var(--card);border-radius:14px;padding:10px 14px;margin:6px 0;border:1px solid rgba(255,255,255,.06)}
   .panel{ background:var(--panel); border-radius:var(--radius); box-shadow:var(--shadow); padding:22px; min-height:600px; border:1px solid rgba(255,255,255,.06); overflow:auto; }
-  .toolbar{display:flex;justify-content:space-between;margin-bottom:14px}
+  .toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
   .tag{padding:6px 10px;border-radius:999px;background:rgba(255,255,255,.06);color:var(--accent-strong);font-size:12px;}
   .btn{padding:10px 14px;border-radius:14px;background:var(--accent);color:#0c0f18;font-weight:800;border:none;cursor:pointer;}
   .btn.ghost{background:transparent;color:var(--accent-strong);border:1px solid rgba(255,255,255,.14)}
+  .btn.mobile{display:none}
+
   .cardwrap{display:grid;place-items:center;padding:20px;}
-  .card{width:100%;min-height:240px;perspective:1200px;}
-  .face{ background:linear-gradient(180deg, var(--card), rgba(255,255,255,.02)); color:var(--ink); border-radius:28px; padding:30px; box-shadow:var(--shadow); border:1px solid rgba(255,255,255,.08); font-size:clamp(16px, 2.8vw, 34px); font-weight:900; line-height:1.15; display:flex; align-items:center; justify-content:center; text-align:center; height:100%; transition:transform .6s ease, box-shadow .3s ease; transform-style:preserve-3d; overflow-wrap:anywhere; word-break:break-word; hyphens:auto; }
+  .card{width:100%;min-height:clamp(220px,40vh,360px);perspective:1200px;}
+  .face{ background:linear-gradient(180deg, var(--card), rgba(255,255,255,.02)); color:var(--ink); border-radius:28px; padding:24px; box-shadow:var(--shadow); border:1px solid rgba(255,255,255,.08); font-size:clamp(16px, 4.8vw, 34px); font-weight:900; line-height:1.15; display:flex; align-items:center; justify-content:center; text-align:center; height:100%; transition:transform .6s ease, box-shadow .3s ease; transform-style:preserve-3d; overflow-wrap:anywhere; word-break:break-word; hyphens:auto; }
   .flipper{position:relative}
   .flipper .front,.flipper .back{position:absolute;inset:0;backface-visibility:hidden}
   .flipper .back{transform:rotateY(180deg)}
   .flipped .front{transform:rotateY(180deg)}
   .flipped .back{transform:rotateY(360deg)}
+
   .qwrap{display:grid;gap:14px}
   .q{padding:18px;border-radius:16px;background:var(--card);border:1px solid rgba(255,255,255,.08)}
   .choices{display:grid;gap:10px;margin-top:8px}
-  .choice{padding:12px 14px;border-radius:12px;background:rgba(255,255,255,.05);cursor:pointer;border:1px solid rgba(255,255,255,.08)}
+  .choice{padding:14px 16px;border-radius:12px;background:rgba(255,255,255,.05);cursor:pointer;border:1px solid rgba(255,255,255,.08);font-size:16px}
   .choice.correct{outline:2px solid var(--success);background:rgba(34,160,93,.12)}
   .choice.wrong{outline:2px solid var(--danger);background:rgba(214,69,69,.12)}
+
   .match-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
-  .match-item{padding:10px;border-radius:10px;background:var(--card);cursor:pointer;border:1px solid rgba(255,255,255,.08);font-size:14px}
-  .match-item.correct{background:rgba(34,160,93,.2)}
-  .match-item.wrong{background:rgba(214,69,69,.2)}
-  /* Matching styles */
-  .match-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px }
-  @media (max-width: 820px){ .match-grid{ grid-template-columns:1fr } }
-  .match-item{ padding:12px; border-radius:12px; background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.08); cursor:pointer; user-select:none }
+  .match-item{padding:12px;border-radius:12px;background:rgba(255,255,255,.05);cursor:pointer;border:1px solid rgba(255,255,255,.08);font-size:14px;user-select:none}
   .match-item.sel{ outline:2px solid var(--accent-strong); background:rgba(255,255,255,.08) }
   .match-item.correct{ outline:2px solid var(--success); background:rgba(34,160,93,.12) }
   .match-item.wrong{ outline:2px solid var(--danger); background:rgba(214,69,69,.12) }
+
+  /* Mobile layout */
+  @media (max-width: 820px){
+    body{padding:12px}
+    .app{grid-template-columns:1fr; gap:12px}
+    .sidebar{position:static; order:-1; padding:12px}
+    .panel{padding:14px; min-height:auto}
+    .btn.mobile{display:inline-block}
+    .stack-sm{display:flex; gap:8px; flex-wrap:wrap}
+    .stack-sm > .btn{flex:1 1 140px}
+    .choice{padding:16px 18px; font-size:17px}
+    .match-grid{grid-template-columns:1fr}
+    .select{padding:10px 12px}
+  }
+
+  /* Sidebar collapse */
+  .sidebar.hide-on-mobile{display:block}
+  @media (max-width: 820px){
+    .sidebar.hide-on-mobile{display:none}
+    .sidebar.show{display:block}
+  }
 </style>
 </head>
 <body data-theme="sasp">
 <div id="root-app" class="app">
-  <aside class="sidebar">
+  <aside class="sidebar hide-on-mobile" id="sidebar">
     <h1>Cadet Trainer</h1>
     <p class="sub">Practice 10-codes and case laws. Flashcards, quiz, or matching.</p>
 
@@ -93,17 +103,27 @@
     <div class="stat"><span>Streak</span><strong id="streak">0</strong></div>
     <div class="stat"><span>All-time Streak 🏆</span><strong id="alltime">0</strong></div>
 
-    <button class="btn ghost" id="shuffleBtn" style="width:100%;margin-top:12px">Shuffle Deck</button>
-    <button class="btn ghost" id="resetBtn" style="width:100%;margin-top:8px">Reset Stats</button>
-    <button class="btn ghost" id="resetAllBtn" style="width:100%;margin-top:8px">Reset All-time Streak</button>
+    <div class="stack-sm" style="margin-top:8px">
+      <button class="btn ghost" id="shuffleBtn" style="width:100%">Shuffle Deck</button>
+      <button class="btn ghost" id="resetBtn" style="width:100%">Reset Stats</button>
+      <button class="btn ghost" id="resetAllBtn" style="width:100%">Reset All-time</button>
+    </div>
   </aside>
 
   <main class="panel">
-    <div class="toolbar"><span class="tag" id="tag">Flashcards</span></div>
+    <div class="toolbar">
+      <span class="tag" id="tag">Flashcards</span>
+      <button class="btn mobile" id="menuBtn">Menu</button>
+    </div>
 
     <section id="flashSection" class="cardwrap">
-      <div class="card"><div class="flipper" id="flipper"><div class="face front" id="front">Tap card to flip</div><div class="face back" id="back"></div></div></div>
-      <div style="display:flex;gap:10px;justify-content:center;margin-top:12px">
+      <div class="card">
+        <div class="flipper" id="flipper">
+          <div class="face front" id="front">Tap card to flip</div>
+          <div class="face back" id="back"></div>
+        </div>
+      </div>
+      <div class="stack-sm" style="justify-content:center;margin-top:12px">
         <button class="btn ghost" id="markWrong">Wrong</button>
         <button class="btn" id="markRight">Right</button>
       </div>
@@ -116,7 +136,7 @@
           <h2 id="qtext"></h2>
           <div class="choices" id="choices"></div>
         </div>
-        <div style="display:flex;gap:8px;justify-content:flex-end">
+        <div class="stack-sm" style="justify-content:flex-end">
           <button class="btn ghost" id="restartQuiz">Restart</button>
           <button class="btn" id="nextQ">Next</button>
         </div>
@@ -126,7 +146,7 @@
     <section id="matchSection" style="display:none">
       <div class="qmeta" style="margin-bottom:10px"><div id="mcount">Match the pairs</div><div id="mleft"></div></div>
       <div id="matchGrid" class="match-grid"></div>
-      <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:10px">
+      <div class="stack-sm" style="justify-content:flex-end;margin-top:10px">
         <button class="btn ghost" id="restartMatch">New Board</button>
       </div>
     </section>
@@ -138,14 +158,14 @@
           <h2 id="cqtext"></h2>
           <div class="choices" id="cchoices"></div>
         </div>
-        <div style="display:flex;gap:8px;justify-content:flex-end">
+        <div class="stack-sm" style="justify-content:flex-end">
           <button class="btn ghost" id="restartCase">Restart</button>
           <button class="btn" id="nextCase">Next</button>
         </div>
       </div>
     </section>
 
-    <!-- Contraband Yes/No -->
+    <!-- Contraband -->
     <section id="contrabandSection" style="display:none">
       <div class="qwrap">
         <div class="q">
@@ -153,14 +173,14 @@
           <h2 id="btext"></h2>
           <div class="choices" id="bchoices"></div>
         </div>
-        <div style="display:flex;gap:8px;justify-content:flex-end">
+        <div class="stack-sm" style="justify-content:flex-end">
           <button class="btn ghost" id="restartContra">Restart</button>
           <button class="btn" id="nextContra">Next</button>
         </div>
       </div>
     </section>
 
-    <!-- NEW: Negotiations MCQ -->
+    <!-- Negotiations -->
     <section id="negotiationsSection" style="display:none">
       <div class="qwrap">
         <div class="q">
@@ -168,14 +188,14 @@
           <h2 id="ntext"></h2>
           <div class="choices" id="nchoices"></div>
         </div>
-        <div style="display:flex;gap:8px;justify-content:flex-end">
+        <div class="stack-sm" style="justify-content:flex-end">
           <button class="btn ghost" id="restartNeg">Restart</button>
           <button class="btn" id="nextNeg">Next</button>
         </div>
       </div>
     </section>
 
-    <!-- NEW: Weapon Class Quiz -->
+    <!-- Weapon class -->
     <section id="weaponSection" style="display:none">
       <div class="qwrap">
         <div class="q">
@@ -183,14 +203,14 @@
           <h2 id="wtext"></h2>
           <div class="choices" id="wchoices"></div>
         </div>
-        <div style="display:flex;gap:8px;justify-content:flex-end">
+        <div class="stack-sm" style="justify-content:flex-end">
           <button class="btn ghost" id="restartWeap">Restart</button>
           <button class="btn" id="nextWeap">Next</button>
         </div>
       </div>
     </section>
 
-    <!-- NEW: Drug Class Quiz -->
+    <!-- Drug class -->
     <section id="drugSection" style="display:none">
       <div class="qwrap">
         <div class="q">
@@ -198,7 +218,7 @@
           <h2 id="dtext"></h2>
           <div class="choices" id="dchoices"></div>
         </div>
-        <div style="display:flex;gap:8px;justify-content:flex-end">
+        <div class="stack-sm" style="justify-content:flex-end">
           <button class="btn ghost" id="restartDrug">Restart</button>
           <button class="btn" id="nextDrug">Next</button>
         </div>
@@ -208,7 +228,7 @@
   </main>
 </div>
 <script>
-// === DATA ===
+// === DATA (unchanged content you provided + new sets) ===
 const CODES = [
   {c:'Code 0', m:'Game Crash'},
   {c:'Code 1', m:'Routing Call (No Lights | No Sirens)'},
@@ -279,28 +299,20 @@ const CASES = [
   {name:'Terry v. Ohio', sum:'With reasonable suspicion a suspect committed, is committing, or is about to commit a crime and may be armed and dangerous, an officer may conduct a stop-and-frisk based on specific articulable facts.'},
   {name:'Whren v. U.S.', sum:'A vehicle may be stopped when there is probable cause of a traffic violation, even if the officer’s actual intent is not traffic enforcement; a traffic stop is a form of detention.'},
   {name:'Pennsylvania v. Mimms', sum:'During a lawful traffic stop, officers may order the driver out of the car and conduct a pat-down for weapons under Terry criteria.'},
-  {name:'Maryland v. Wilson', sum:'Extends Mimms to passengers, officers may order passengers out and pat them down under Terry criteria.'},
+  {name:'Maryland v. Wilson', sum:'Extends Mimms to passengers—officers may order passengers out and pat them down under Terry criteria.'},
   {name:'Brendlin v. California', sum:'A lawful traffic stop detains passengers as well as the driver; no one is free to depart without police permission.'}
 ];
 
-// CONTRABAND (Yes) — your list + “should be taken off a suspect”
+// CONTRABAND sets
 const CONTRA_YES = [
   'red decryption key','blue decryption key','green decryption key',
   'chip','raspberry chip','fake plates','meth table','catalytic converter','pager',
-  // weapons (any class)
-  // Class 2
   'Ceramic Pistol','Combat Pistol','Double Action Revolver','Heavy Pistol','Heavy Revolver','Heavy Revolver Mk II','Marksman Pistol','Navy Revolver','Perico Pistol','Pistol .50','SNS Pistol Mk II','WM 29 Pistol','Pistol Mk II','Beretta M9A3',
-  // Class 3
   'AP Pistol','Assault Shotgun','Assault SMG','Bullpup Shotgun','Combat PDW','Combat Shotgun','Double Barrel Shotgun','Gusenberg Sweeper','Heavy Shotgun','Machine Pistol','Micro SMG','Mini SMG','Pump Shotgun','Pump Shotgun Mk II','Sawed-Off Shotgun','SMG','SMG Mk II','Sweeper Shotgun','Tactical SMG',
-  // Class 4
   'Advanced Rifle','Assault Rifle','Assault Rifle Mk II','Battle Rifle','Bullpup Rifle','Bullpup Rifle Mk II','Carbine Rifle','Carbine Rifle Mk II','Heavy Rifle','Heavy Sniper','Heavy Sniper Mk II','Marksman Rifle','Marksman Rifle Mk II','Military Rifle','Musket','Precision Rifle','Service Carbine','Sniper Rifle','Special Carbine','Special Carbine Mk II','Remington Rifle','Compact Rifle',
-  // Class 5
   'BZ Gas Grenades','Compact Grenade','Grenade','Molotov Cocktail','Pipe Bombs','Proximity Mines','Sticky Bomb','Grill bombs','Box Bombs',
-  // more to take off
   'melee weapon','jerry can','lighter','alcohol','handcuffs','bolt cutters','lockpicks'
 ];
-
-// NOT contraband (No)
 const CONTRA_NO = [
   'cigarettes','food','drinks','lunchbox','camera','pets','skateboard','remote','phone','radio','med kit','armor','bandaid','toys','wallet'
 ];
@@ -308,8 +320,8 @@ const CONTRA_NO = [
 // NEGOTIATIONS steps
 const STEPS = [
   'Go to the door',
-  'Make contact with the robber',
   'Introduce yourself',
+  'Make contact with the robber',
   'Get proof of robbery',
   'Ask them how many inside and outside',
   'Ask them to speak to the hostage',
@@ -320,25 +332,18 @@ const STEPS = [
   'Wait for scene command to set up a pursuit line up'
 ];
 
-// WEAPON CLASSES
+// WEAPON classes
 const WEAPON_CLASSES = {
-  // Class 2
   'Ceramic Pistol':'Class 2 Weapon','Combat Pistol':'Class 2 Weapon','Double Action Revolver':'Class 2 Weapon','Heavy Pistol':'Class 2 Weapon','Heavy Revolver':'Class 2 Weapon','Heavy Revolver Mk II':'Class 2 Weapon','Marksman Pistol':'Class 2 Weapon','Navy Revolver':'Class 2 Weapon','Perico Pistol':'Class 2 Weapon','Pistol .50':'Class 2 Weapon','SNS Pistol Mk II':'Class 2 Weapon','WM 29 Pistol':'Class 2 Weapon','Pistol Mk II':'Class 2 Weapon','Beretta M9A3':'Class 2 Weapon',
-  // Class 3
   'AP Pistol':'Class 3 Weapon','Assault Shotgun':'Class 3 Weapon','Assault SMG':'Class 3 Weapon','Bullpup Shotgun':'Class 3 Weapon','Combat PDW':'Class 3 Weapon','Combat Shotgun':'Class 3 Weapon','Double Barrel Shotgun':'Class 3 Weapon','Gusenberg Sweeper':'Class 3 Weapon','Heavy Shotgun':'Class 3 Weapon','Machine Pistol':'Class 3 Weapon','Micro SMG':'Class 3 Weapon','Mini SMG':'Class 3 Weapon','Pump Shotgun':'Class 3 Weapon','Pump Shotgun Mk II':'Class 3 Weapon','Sawed-Off Shotgun':'Class 3 Weapon','SMG':'Class 3 Weapon','SMG Mk II':'Class 3 Weapon','Sweeper Shotgun':'Class 3 Weapon','Tactical SMG':'Class 3 Weapon',
-  // Class 4
   'Advanced Rifle':'Class 4 Weapon','Assault Rifle':'Class 4 Weapon','Assault Rifle Mk II':'Class 4 Weapon','Battle Rifle':'Class 4 Weapon','Bullpup Rifle':'Class 4 Weapon','Bullpup Rifle Mk II':'Class 4 Weapon','Carbine Rifle':'Class 4 Weapon','Carbine Rifle Mk II':'Class 4 Weapon','Heavy Rifle':'Class 4 Weapon','Heavy Sniper':'Class 4 Weapon','Heavy Sniper Mk II':'Class 4 Weapon','Marksman Rifle':'Class 4 Weapon','Marksman Rifle Mk II':'Class 4 Weapon','Military Rifle':'Class 4 Weapon','Musket':'Class 4 Weapon','Precision Rifle':'Class 4 Weapon','Service Carbine':'Class 4 Weapon','Sniper Rifle':'Class 4 Weapon','Special Carbine':'Class 4 Weapon','Special Carbine Mk II':'Class 4 Weapon','Remington Rifle':'Class 4 Weapon','Compact Rifle':'Class 4 Weapon',
-  // Class 5
   'BZ Gas Grenades':'Class 5 Weapon','Compact Grenade':'Class 5 Weapon','Grenade':'Class 5 Weapon','Molotov Cocktail':'Class 5 Weapon','Pipe Bombs':'Class 5 Weapon','Proximity Mines':'Class 5 Weapon','Sticky Bomb':'Class 5 Weapon','Grill bombs':'Class 5 Weapon','Box Bombs':'Class 5 Weapon'
 };
 
-// DRUG CLASSES
+// DRUG classes
 const DRUG_CLASSES = {
-  // P.C. 110 — Class A
   'Cocaine':'Class A Substance','Crack':'Class A Substance','Methamphetamine (Meth)':'Class A Substance','Psilocybe Cyanescens (Shrooms)':'Class A Substance',
-  // P.C. 111 — Class B
   'Marijuana (Weed)':'Class B Substance','Lysergic Acid Diethylamide (Acid)':'Class B Substance','Lean':'Class B Substance',
-  // P.C. 126 — Narcotics
   'Painkillers':'Narcotics','Antibiotics':'Narcotics','Fentanyl':'Narcotics','OxyContin (Oxy)':'Narcotics'
 };
 
@@ -346,7 +351,6 @@ function $(id){return document.getElementById(id)}
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 
 let deck=[...CODES]; let index=0;
-// include alltime in saved stats
 let stats=JSON.parse(localStorage.getItem('cadet_stats')||'{"seen":0,"correct":0,"streak":0,"alltime":0}');
 function setStats(){
   $('seen').textContent=stats.seen;
@@ -355,6 +359,15 @@ function setStats(){
   if($('alltime')) $('alltime').textContent = stats.alltime||0;
   localStorage.setItem('cadet_stats',JSON.stringify(stats));
 }
+
+// Mobile menu toggle
+const sidebar=$('sidebar');
+const menuBtn=$('menuBtn');
+menuBtn?.addEventListener('click', ()=>{
+  if(!sidebar) return;
+  sidebar.classList.toggle('show');
+  if(sidebar.classList.contains('show')) window.scrollTo({top:0, behavior:'smooth'});
+});
 
 $('theme').onchange=()=>{ document.body.setAttribute('data-theme',$('theme').value) };
 $('mode').onchange=()=> switchMode($('mode').value);
@@ -367,6 +380,8 @@ function switchMode(m){
     m==='contraband'?'Contraband Quiz':
     m==='negotiations'?'Negotiations Quiz':
     m==='weapons'?'Weapon Class Quiz':'Drug Class Quiz';
+
+  if (window.matchMedia('(max-width: 820px)').matches) sidebar?.classList.remove('show');
 
   $('flashSection').style.display = m==='flash'?'':'none';
   $('quizSection').style.display  = m==='quiz'?'':'none';
@@ -389,12 +404,6 @@ function switchMode(m){
 const front=$('front'), back=$('back'), flipper=$('flipper');
 function updateCard(){ const it=deck[index]; front.textContent=it.c; back.textContent=it.m; flipper.classList.remove('flipped'); requestAnimationFrame(()=>{ autoFit(front, 34, 14); autoFit(back, 34, 14); }); }
 
-function fitText(el,max,min){
-  let size=max; el.style.fontSize=size+'px';
-  while((el.scrollHeight>el.clientHeight||el.scrollWidth>el.clientWidth) && size>min){
-    size--; el.style.fontSize=size+'px';
-  }
-}
 flipper.addEventListener('click',()=> flipper.classList.toggle('flipped'));
 $('markRight').onclick=()=>{ 
   stats.seen++; stats.correct++; stats.streak++;
@@ -484,7 +493,6 @@ function renderContra(){
       stats.seen++;
       if(ok){ stats.correct++; stats.streak++; if(stats.streak>(stats.alltime||0)) stats.alltime=stats.streak; bScore++; }
       else { stats.streak=0; }
-      // reveal correct
       [...box.children].forEach(el=>{
         const should = q.yes ? 'Yes' : 'No';
         if(el.textContent===should) el.classList.add('correct');
@@ -551,7 +559,6 @@ function renderWeap(){
       stats.seen++;
       if(ok){ stats.correct++; stats.streak++; if(stats.streak>(stats.alltime||0)) stats.alltime=stats.streak; wScore++; }
       else { stats.streak=0; }
-      // reveal correct
       [...box.children].forEach(el=>{ if(el.textContent===answer) el.classList.add('correct'); });
       setStats();
     };
@@ -594,12 +601,11 @@ $('nextDrug').onclick=()=>{ if(di<dQ.length-1){ di++; renderDrug(); } else { sta
 $('restartDrug').onclick=startDrug;
 
 // INIT
-updateCard(); setStats();
-
-// Re-fit on resize
+setStats();
+updateCard();
 window.addEventListener('resize',()=>{ autoFit(front,34,14); autoFit(back,34,14); });
 
-// Auto-fit helper: shrink font size until the content fits
+// Auto-fit helper
 function autoFit(el, maxPx=34, minPx=14){
   if(!el) return; let size=maxPx; el.style.fontSize=size+'px';
   const maxH = el.clientHeight - 16; const maxW = el.clientWidth - 16;
@@ -608,5 +614,3 @@ function autoFit(el, maxPx=34, minPx=14){
 </script>
 </body>
 </html>
-
-
