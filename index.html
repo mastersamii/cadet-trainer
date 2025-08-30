@@ -81,17 +81,18 @@
       <option value="quiz">Quiz</option>
       <option value="match">Matching</option>
       <option value="caselaw">Case Law Quiz</option>
+      <!-- NEW -->
+      <option value="contraband">Contraband Quiz</option>
+      <option value="negotiations">Negotiations Quiz</option>
     </select>
 
     <div class="stat"><span>Seen</span><strong id="seen">0</strong></div>
     <div class="stat"><span>Correct</span><strong id="correct">0</strong></div>
     <div class="stat"><span>Streak</span><strong id="streak">0</strong></div>
-    <!-- NEW: All-time streak tile -->
     <div class="stat"><span>All-time Streak 🏆</span><strong id="alltime">0</strong></div>
 
     <button class="btn ghost" id="shuffleBtn" style="width:100%;margin-top:12px">Shuffle Deck</button>
     <button class="btn ghost" id="resetBtn" style="width:100%;margin-top:8px">Reset Stats</button>
-    <!-- NEW: Reset all-time button -->
     <button class="btn ghost" id="resetAllBtn" style="width:100%;margin-top:8px">Reset All-time Streak</button>
   </aside>
 
@@ -121,12 +122,12 @@
     </section>
 
     <section id="matchSection" style="display:none">
-        <div class="qmeta" style="margin-bottom:10px"><div id="mcount">Match the pairs</div><div id="mleft"></div></div>
-        <div id="matchGrid" class="match-grid"></div>
-        <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:10px">
-          <button class="btn ghost" id="restartMatch">New Board</button>
-        </div>
-      </section>
+      <div class="qmeta" style="margin-bottom:10px"><div id="mcount">Match the pairs</div><div id="mleft"></div></div>
+      <div id="matchGrid" class="match-grid"></div>
+      <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:10px">
+        <button class="btn ghost" id="restartMatch">New Board</button>
+      </div>
+    </section>
 
     <section id="caseSection" style="display:none">
       <div class="qwrap">
@@ -138,6 +139,36 @@
         <div style="display:flex;gap:8px;justify-content:flex-end">
           <button class="btn ghost" id="restartCase">Restart</button>
           <button class="btn" id="nextCase">Next</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- NEW: Contraband Yes/No -->
+    <section id="contrabandSection" style="display:none">
+      <div class="qwrap">
+        <div class="q">
+          <div class="qmeta"><div id="bcount">Contraband Question</div><div id="bscore">0 correct</div></div>
+          <h2 id="btext"></h2>
+          <div class="choices" id="bchoices"></div>
+        </div>
+        <div style="display:flex;gap:8px;justify-content:flex-end">
+          <button class="btn ghost" id="restartContra">Restart</button>
+          <button class="btn" id="nextContra">Next</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- NEW: Negotiations MCQ -->
+    <section id="negotiationsSection" style="display:none">
+      <div class="qwrap">
+        <div class="q">
+          <div class="qmeta"><div id="ncount">Negotiations Question</div><div id="nscore">0 correct</div></div>
+          <h2 id="ntext"></h2>
+          <div class="choices" id="nchoices"></div>
+        </div>
+        <div style="display:flex;gap:8px;justify-content:flex-end">
+          <button class="btn ghost" id="restartNeg">Restart</button>
+          <button class="btn" id="nextNeg">Next</button>
         </div>
       </div>
     </section>
@@ -220,11 +251,31 @@ const CASES = [
   {name:'Brendlin v. California', sum:'A lawful traffic stop detains passengers as well as the driver; no one is free to depart without police permission.'}
 ];
 
+// NEW: contraband items (only what you provided)
+const CONTRABAND = [
+  'red decryption key','blue decryption key','green decryption key',
+  'chip','raspberry chip','fake plates','meth table','catalytic converter','pager'
+];
+
+// NEW: negotiations steps (exact order you gave)
+const STEPS = [
+  'got to the door',
+  'introduce yourself',
+  'make contact with the robber',
+  'ask them how many inside and outside',
+  'ask them to speak to the hostage',
+  'see if hostage has been treated okay do they need medical water or food',
+  'get demands from the robbers',
+  'relay information to scene command',
+  'relay information to robbers from scene command',
+  'wait for scene command to set up a pursuit line up'
+];
+
 function $(id){return document.getElementById(id)}
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 
 let deck=[...CODES]; let index=0;
-// UPDATED: include alltime in saved stats
+// include alltime in saved stats
 let stats=JSON.parse(localStorage.getItem('cadet_stats')||'{"seen":0,"correct":0,"streak":0,"alltime":0}');
 function setStats(){
   $('seen').textContent=stats.seen;
@@ -236,7 +287,27 @@ function setStats(){
 
 $('theme').onchange=()=>{ document.body.setAttribute('data-theme',$('theme').value) };
 $('mode').onchange=()=> switchMode($('mode').value);
-function switchMode(m){ $('tag').textContent = m==='flash'?'Flashcards': m==='quiz'?'Quiz': m==='match'?'Matching':'Case Law Quiz'; $('flashSection').style.display = m==='flash'?'':'none'; $('quizSection').style.display = m==='quiz'?'':'none'; $('matchSection').style.display = m==='match'?'':'none'; $('caseSection').style.display = m==='caselaw'?'':'none'; if(m==='quiz') startQuiz(); if(m==='match') startMatch(); if(m==='caselaw') startCase(); }
+function switchMode(m){
+  $('tag').textContent =
+    m==='flash'?'Flashcards':
+    m==='quiz'?'Quiz':
+    m==='match'?'Matching':
+    m==='caselaw'?'Case Law Quiz':
+    m==='contraband'?'Contraband Quiz':'Negotiations Quiz';
+
+  $('flashSection').style.display = m==='flash'?'':'none';
+  $('quizSection').style.display  = m==='quiz'?'':'none';
+  $('matchSection').style.display = m==='match'?'':'none';
+  $('caseSection').style.display  = m==='caselaw'?'':'none';
+  $('contrabandSection').style.display = m==='contraband'?'':'none';
+  $('negotiationsSection').style.display = m==='negotiations'?'':'none';
+
+  if(m==='quiz') startQuiz();
+  if(m==='match') startMatch();
+  if(m==='caselaw') startCase();
+  if(m==='contraband') startContra();
+  if(m==='negotiations') startNeg();
+}
 
 const front=$('front'), back=$('back'), flipper=$('flipper');
 function updateCard(){ const it=deck[index]; front.textContent=it.c; back.textContent=it.m; flipper.classList.remove('flipped'); requestAnimationFrame(()=>{ autoFit(front, 34, 14); autoFit(back, 34, 14); }); }
@@ -250,7 +321,6 @@ function fitText(el,max,min){
 flipper.addEventListener('click',()=> flipper.classList.toggle('flipped'));
 $('markRight').onclick=()=>{ 
   stats.seen++; stats.correct++; stats.streak++;
-  // NEW: bump all-time record if needed
   if(stats.streak > (stats.alltime||0)) stats.alltime = stats.streak;
   setStats(); nextCard(); 
 };
@@ -258,7 +328,6 @@ $('markWrong').onclick=()=>{ stats.seen++; stats.streak=0; setStats(); nextCard(
 function nextCard(){ index=(index+1)%deck.length; updateCard(); }
 $('shuffleBtn').onclick=()=>{ deck=shuffle(deck); index=0; updateCard(); };
 $('resetBtn').onclick=()=>{ stats={seen:0,correct:0,streak:0,alltime:stats.alltime||0}; setStats(); };
-// NEW: reset all-time handler
 $('resetAllBtn').onclick=()=>{ stats.alltime=0; setStats(); };
 
 // QUIZ
@@ -288,13 +357,11 @@ function startMatch(){
       const isMatch = (sel.dataset.key===d.dataset.key && sel.dataset.side!==d.dataset.side);
       if(isMatch){
         stats.correct++; stats.streak++;
-        // NEW: bump all-time record if needed
         if(stats.streak > (stats.alltime||0)) stats.alltime = stats.streak;
         d.classList.add('correct'); sel.classList.add('correct');
         solved.add(d.dataset.key);
         $('mleft').textContent = (pairs.length - solved.size) + ' pairs left';
         setTimeout(()=>{ d.style.visibility='hidden'; sel.style.visibility='hidden'; sel=null; },220);
-        // Auto-reset when all pairs matched
         if(solved.size === pairs.length){ setTimeout(()=>{ startMatch(); toast('New board ready'); }, 350); }
       } else {
         stats.streak=0; d.classList.add('wrong'); sel.classList.add('wrong');
@@ -318,6 +385,64 @@ function renderCase(){ const q=caseQ[ci]; $('cqtext').textContent=q.sum; $('cqco
 $('nextCase').onclick=()=>{ if(ci<caseQ.length-1){ ci++; renderCase(); } else { startCase(); } };
 $('restartCase').onclick=startCase;
 
+// NEW: CONTRABAND QUIZ (Yes/No)
+let bQ=[], bi=0, bScore=0, bLocked=false;
+function startContra(){ bQ = shuffle(CONTRABAND.map(name=>({name}))).slice(0,10); bi=0; bScore=0; bLocked=false; renderContra(); }
+function renderContra(){
+  const q=bQ[bi];
+  $('btext').textContent = `Is possession of a ${q.name} considered contraband?`;
+  $('bcount').textContent=`Q${bi+1}/${bQ.length}`;
+  $('bscore').textContent=`${bScore} correct`;
+  const box=$('bchoices'); box.innerHTML=''; bLocked=false;
+  ['Yes','No'].forEach(ans=>{
+    const d=document.createElement('div'); d.className='choice'; d.textContent=ans;
+    d.onclick=()=>{
+      if(bLocked) return; bLocked=true;
+      const ok = (ans==='Yes'); // all provided items are contraband
+      d.classList.add(ok?'correct':'wrong');
+      stats.seen++;
+      if(ok){ stats.correct++; stats.streak++; if(stats.streak>(stats.alltime||0)) stats.alltime=stats.streak; bScore++; }
+      else { stats.streak=0; }
+      setStats();
+    };
+    box.appendChild(d);
+  });
+}
+$('nextContra').onclick=()=>{ if(bi<bQ.length-1){ bi++; renderContra(); } else { startContra(); } };
+$('restartContra').onclick=startContra;
+
+// NEW: NEGOTIATIONS QUIZ (order-based MCQ)
+let nI=0, nScore=0, nLocked=false;
+function startNeg(){ nI=0; nScore=0; nLocked=false; renderNeg(); }
+function renderNeg(){
+  const prompt = nI===0 ? 'What is the FIRST step?' : `What comes AFTER: "${STEPS[nI-1]}"?`;
+  $('ntext').textContent = prompt;
+  $('ncount').textContent = `Step ${nI+1}/10`;
+  $('nscore').textContent = `${nScore} correct`;
+  const opts = shuffle([STEPS[nI], ...shuffle(STEPS.filter((_,i)=>i!==nI)).slice(0,3)]);
+  const box=$('nchoices'); box.innerHTML=''; nLocked=false;
+  opts.forEach(txt=>{
+    const d=document.createElement('div'); d.className='choice'; d.textContent=txt;
+    d.onclick=()=>{
+      if(nLocked) return; nLocked=true;
+      const ok = (txt===STEPS[nI]);
+      d.classList.add(ok?'correct':'wrong');
+      stats.seen++;
+      if(ok){
+        stats.correct++; stats.streak++; if(stats.streak>(stats.alltime||0)) stats.alltime=stats.streak;
+        nScore++;
+      } else {
+        stats.streak=0;
+        [...box.children].forEach(el=>{ if(el.textContent===STEPS[nI]) el.classList.add('correct'); });
+      }
+      setStats();
+    };
+    box.appendChild(d);
+  });
+}
+$('nextNeg').onclick=()=>{ if(nI<STEPS.length-1){ nI++; renderNeg(); } else { startNeg(); } };
+$('restartNeg').onclick=startNeg;
+
 // INIT
 updateCard(); setStats();
 
@@ -331,3 +456,5 @@ function autoFit(el, maxPx=34, minPx=14){
   while((el.scrollHeight>maxH || el.scrollWidth>maxW) && size>minPx){ size-=1; el.style.fontSize=size+'px'; }
 }
 </script>
+</body>
+</html>
