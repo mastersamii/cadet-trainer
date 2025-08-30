@@ -84,6 +84,8 @@
       <!-- NEW -->
       <option value="contraband">Contraband Quiz</option>
       <option value="negotiations">Negotiations Quiz</option>
+      <option value="weapons">Weapon Class Quiz</option>
+      <option value="drugs">Drug Class Quiz</option>
     </select>
 
     <div class="stat"><span>Seen</span><strong id="seen">0</strong></div>
@@ -143,7 +145,7 @@
       </div>
     </section>
 
-    <!-- NEW: Contraband Yes/No -->
+    <!-- Contraband Yes/No -->
     <section id="contrabandSection" style="display:none">
       <div class="qwrap">
         <div class="q">
@@ -169,6 +171,36 @@
         <div style="display:flex;gap:8px;justify-content:flex-end">
           <button class="btn ghost" id="restartNeg">Restart</button>
           <button class="btn" id="nextNeg">Next</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- NEW: Weapon Class Quiz -->
+    <section id="weaponSection" style="display:none">
+      <div class="qwrap">
+        <div class="q">
+          <div class="qmeta"><div id="wcount">Weapon Class Question</div><div id="wscore">0 correct</div></div>
+          <h2 id="wtext"></h2>
+          <div class="choices" id="wchoices"></div>
+        </div>
+        <div style="display:flex;gap:8px;justify-content:flex-end">
+          <button class="btn ghost" id="restartWeap">Restart</button>
+          <button class="btn" id="nextWeap">Next</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- NEW: Drug Class Quiz -->
+    <section id="drugSection" style="display:none">
+      <div class="qwrap">
+        <div class="q">
+          <div class="qmeta"><div id="dcount">Drug Class Question</div><div id="dscore">0 correct</div></div>
+          <h2 id="dtext"></h2>
+          <div class="choices" id="dchoices"></div>
+        </div>
+        <div style="display:flex;gap:8px;justify-content:flex-end">
+          <button class="btn ghost" id="restartDrug">Restart</button>
+          <button class="btn" id="nextDrug">Next</button>
         </div>
       </div>
     </section>
@@ -251,13 +283,29 @@ const CASES = [
   {name:'Brendlin v. California', sum:'A lawful traffic stop detains passengers as well as the driver; no one is free to depart without police permission.'}
 ];
 
-//contraband items
-const CONTRABAND = [
+// CONTRABAND (Yes) — your list + “should be taken off a suspect”
+const CONTRA_YES = [
   'red decryption key','blue decryption key','green decryption key',
-  'chip','raspberry chip','fake plates','meth table','catalytic converter','pager'
+  'chip','raspberry chip','fake plates','meth table','catalytic converter','pager',
+  // weapons (any class)
+  // Class 2
+  'Ceramic Pistol','Combat Pistol','Double Action Revolver','Heavy Pistol','Heavy Revolver','Heavy Revolver Mk II','Marksman Pistol','Navy Revolver','Perico Pistol','Pistol .50','SNS Pistol Mk II','WM 29 Pistol','Pistol Mk II','Beretta M9A3',
+  // Class 3
+  'AP Pistol','Assault Shotgun','Assault SMG','Bullpup Shotgun','Combat PDW','Combat Shotgun','Double Barrel Shotgun','Gusenberg Sweeper','Heavy Shotgun','Machine Pistol','Micro SMG','Mini SMG','Pump Shotgun','Pump Shotgun Mk II','Sawed-Off Shotgun','SMG','SMG Mk II','Sweeper Shotgun','Tactical SMG',
+  // Class 4
+  'Advanced Rifle','Assault Rifle','Assault Rifle Mk II','Battle Rifle','Bullpup Rifle','Bullpup Rifle Mk II','Carbine Rifle','Carbine Rifle Mk II','Heavy Rifle','Heavy Sniper','Heavy Sniper Mk II','Marksman Rifle','Marksman Rifle Mk II','Military Rifle','Musket','Precision Rifle','Service Carbine','Sniper Rifle','Special Carbine','Special Carbine Mk II','Remington Rifle','Compact Rifle',
+  // Class 5
+  'BZ Gas Grenades','Compact Grenade','Grenade','Molotov Cocktail','Pipe Bombs','Proximity Mines','Sticky Bomb','Grill bombs','Box Bombs',
+  // more to take off
+  'melee weapon','jerry can','lighter','alcohol','handcuffs','bolt cutters','lockpicks'
 ];
 
-// negotiations steps
+// NOT contraband (No)
+const CONTRA_NO = [
+  'cigarettes','food','drinks','lunchbox','camera','pets','skateboard','remote','phone','radio','med kit','armor','bandaid','toys','wallet'
+];
+
+// NEGOTIATIONS steps
 const STEPS = [
   'Go to the door',
   'Introduce yourself',
@@ -271,6 +319,28 @@ const STEPS = [
   'Relay information to robbers from scene command',
   'Wait for scene command to set up a pursuit line up'
 ];
+
+// WEAPON CLASSES
+const WEAPON_CLASSES = {
+  // Class 2
+  'Ceramic Pistol':'Class 2 Weapon','Combat Pistol':'Class 2 Weapon','Double Action Revolver':'Class 2 Weapon','Heavy Pistol':'Class 2 Weapon','Heavy Revolver':'Class 2 Weapon','Heavy Revolver Mk II':'Class 2 Weapon','Marksman Pistol':'Class 2 Weapon','Navy Revolver':'Class 2 Weapon','Perico Pistol':'Class 2 Weapon','Pistol .50':'Class 2 Weapon','SNS Pistol Mk II':'Class 2 Weapon','WM 29 Pistol':'Class 2 Weapon','Pistol Mk II':'Class 2 Weapon','Beretta M9A3':'Class 2 Weapon',
+  // Class 3
+  'AP Pistol':'Class 3 Weapon','Assault Shotgun':'Class 3 Weapon','Assault SMG':'Class 3 Weapon','Bullpup Shotgun':'Class 3 Weapon','Combat PDW':'Class 3 Weapon','Combat Shotgun':'Class 3 Weapon','Double Barrel Shotgun':'Class 3 Weapon','Gusenberg Sweeper':'Class 3 Weapon','Heavy Shotgun':'Class 3 Weapon','Machine Pistol':'Class 3 Weapon','Micro SMG':'Class 3 Weapon','Mini SMG':'Class 3 Weapon','Pump Shotgun':'Class 3 Weapon','Pump Shotgun Mk II':'Class 3 Weapon','Sawed-Off Shotgun':'Class 3 Weapon','SMG':'Class 3 Weapon','SMG Mk II':'Class 3 Weapon','Sweeper Shotgun':'Class 3 Weapon','Tactical SMG':'Class 3 Weapon',
+  // Class 4
+  'Advanced Rifle':'Class 4 Weapon','Assault Rifle':'Class 4 Weapon','Assault Rifle Mk II':'Class 4 Weapon','Battle Rifle':'Class 4 Weapon','Bullpup Rifle':'Class 4 Weapon','Bullpup Rifle Mk II':'Class 4 Weapon','Carbine Rifle':'Class 4 Weapon','Carbine Rifle Mk II':'Class 4 Weapon','Heavy Rifle':'Class 4 Weapon','Heavy Sniper':'Class 4 Weapon','Heavy Sniper Mk II':'Class 4 Weapon','Marksman Rifle':'Class 4 Weapon','Marksman Rifle Mk II':'Class 4 Weapon','Military Rifle':'Class 4 Weapon','Musket':'Class 4 Weapon','Precision Rifle':'Class 4 Weapon','Service Carbine':'Class 4 Weapon','Sniper Rifle':'Class 4 Weapon','Special Carbine':'Class 4 Weapon','Special Carbine Mk II':'Class 4 Weapon','Remington Rifle':'Class 4 Weapon','Compact Rifle':'Class 4 Weapon',
+  // Class 5
+  'BZ Gas Grenades':'Class 5 Weapon','Compact Grenade':'Class 5 Weapon','Grenade':'Class 5 Weapon','Molotov Cocktail':'Class 5 Weapon','Pipe Bombs':'Class 5 Weapon','Proximity Mines':'Class 5 Weapon','Sticky Bomb':'Class 5 Weapon','Grill bombs':'Class 5 Weapon','Box Bombs':'Class 5 Weapon'
+};
+
+// DRUG CLASSES
+const DRUG_CLASSES = {
+  // P.C. 110 — Class A
+  'Cocaine':'Class A Substance','Crack':'Class A Substance','Methamphetamine (Meth)':'Class A Substance','Psilocybe Cyanescens (Shrooms)':'Class A Substance',
+  // P.C. 111 — Class B
+  'Marijuana (Weed)':'Class B Substance','Lysergic Acid Diethylamide (Acid)':'Class B Substance','Lean':'Class B Substance',
+  // P.C. 126 — Narcotics
+  'Painkillers':'Narcotics','Antibiotics':'Narcotics','Fentanyl':'Narcotics','OxyContin (Oxy)':'Narcotics'
+};
 
 function $(id){return document.getElementById(id)}
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
@@ -294,7 +364,9 @@ function switchMode(m){
     m==='quiz'?'Quiz':
     m==='match'?'Matching':
     m==='caselaw'?'Case Law Quiz':
-    m==='contraband'?'Contraband Quiz':'Negotiations Quiz';
+    m==='contraband'?'Contraband Quiz':
+    m==='negotiations'?'Negotiations Quiz':
+    m==='weapons'?'Weapon Class Quiz':'Drug Class Quiz';
 
   $('flashSection').style.display = m==='flash'?'':'none';
   $('quizSection').style.display  = m==='quiz'?'':'none';
@@ -302,12 +374,16 @@ function switchMode(m){
   $('caseSection').style.display  = m==='caselaw'?'':'none';
   $('contrabandSection').style.display = m==='contraband'?'':'none';
   $('negotiationsSection').style.display = m==='negotiations'?'':'none';
+  $('weaponSection').style.display = m==='weapons'?'':'none';
+  $('drugSection').style.display = m==='drugs'?'':'none';
 
   if(m==='quiz') startQuiz();
   if(m==='match') startMatch();
   if(m==='caselaw') startCase();
   if(m==='contraband') startContra();
   if(m==='negotiations') startNeg();
+  if(m==='weapons') startWeap();
+  if(m==='drugs') startDrug();
 }
 
 const front=$('front'), back=$('back'), flipper=$('flipper');
@@ -388,10 +464,14 @@ $('restartCase').onclick=startCase;
 
 // CONTRABAND QUIZ (Yes/No)
 let bQ=[], bi=0, bScore=0, bLocked=false;
-function startContra(){ bQ = shuffle(CONTRABAND.map(name=>({name}))).slice(0,10); bi=0; bScore=0; bLocked=false; renderContra(); }
+function startContra(){
+  const pool = [...CONTRA_YES.map(n=>({name:n, yes:true})), ...CONTRA_NO.map(n=>({name:n, yes:false}))];
+  bQ = shuffle(pool).slice(0,10);
+  bi=0; bScore=0; bLocked=false; renderContra();
+}
 function renderContra(){
   const q=bQ[bi];
-  $('btext').textContent = `Is possession of a ${q.name} considered contraband?`;
+  $('btext').textContent = `Is possession of "${q.name}" considered contraband?`;
   $('bcount').textContent=`Q${bi+1}/${bQ.length}`;
   $('bscore').textContent=`${bScore} correct`;
   const box=$('bchoices'); box.innerHTML=''; bLocked=false;
@@ -399,11 +479,16 @@ function renderContra(){
     const d=document.createElement('div'); d.className='choice'; d.textContent=ans;
     d.onclick=()=>{
       if(bLocked) return; bLocked=true;
-      const ok = (ans==='Yes'); // all provided items are contraband
+      const ok = (ans==='Yes') === q.yes;
       d.classList.add(ok?'correct':'wrong');
       stats.seen++;
       if(ok){ stats.correct++; stats.streak++; if(stats.streak>(stats.alltime||0)) stats.alltime=stats.streak; bScore++; }
       else { stats.streak=0; }
+      // reveal correct
+      [...box.children].forEach(el=>{
+        const should = q.yes ? 'Yes' : 'No';
+        if(el.textContent===should) el.classList.add('correct');
+      });
       setStats();
     };
     box.appendChild(d);
@@ -412,13 +497,13 @@ function renderContra(){
 $('nextContra').onclick=()=>{ if(bi<bQ.length-1){ bi++; renderContra(); } else { startContra(); } };
 $('restartContra').onclick=startContra;
 
-//NEGOTIATIONS QUIZ
+// NEGOTIATIONS QUIZ
 let nI=0, nScore=0, nLocked=false;
 function startNeg(){ nI=0; nScore=0; nLocked=false; renderNeg(); }
 function renderNeg(){
   const prompt = nI===0 ? 'What is the FIRST step?' : `What comes AFTER: "${STEPS[nI-1]}"?`;
   $('ntext').textContent = prompt;
-  $('ncount').textContent = `Step ${nI+1}/10`;
+  $('ncount').textContent = `Step ${nI+1}/${STEPS.length}`;
   $('nscore').textContent = `${nScore} correct`;
   const opts = shuffle([STEPS[nI], ...shuffle(STEPS.filter((_,i)=>i!==nI)).slice(0,3)]);
   const box=$('nchoices'); box.innerHTML=''; nLocked=false;
@@ -430,8 +515,7 @@ function renderNeg(){
       d.classList.add(ok?'correct':'wrong');
       stats.seen++;
       if(ok){
-        stats.correct++; stats.streak++; if(stats.streak>(stats.alltime||0)) stats.alltime=stats.streak;
-        nScore++;
+        stats.correct++; stats.streak++; if(stats.streak>(stats.alltime||0)) stats.alltime=stats.streak; nScore++;
       } else {
         stats.streak=0;
         [...box.children].forEach(el=>{ if(el.textContent===STEPS[nI]) el.classList.add('correct'); });
@@ -443,6 +527,71 @@ function renderNeg(){
 }
 $('nextNeg').onclick=()=>{ if(nI<STEPS.length-1){ nI++; renderNeg(); } else { startNeg(); } };
 $('restartNeg').onclick=startNeg;
+
+// WEAPON CLASS QUIZ
+let wQ=[], wi=0, wScore=0, wLocked=false;
+function startWeap(){
+  const weapons = Object.keys(WEAPON_CLASSES);
+  wQ = shuffle(weapons).slice(0,10);
+  wi=0; wScore=0; wLocked=false; renderWeap();
+}
+function renderWeap(){
+  const name=wQ[wi]; const answer=WEAPON_CLASSES[name];
+  $('wtext').textContent = `What class is "${name}"?`;
+  $('wcount').textContent = `Q${wi+1}/${wQ.length}`;
+  $('wscore').textContent = `${wScore} correct`;
+  const opts = shuffle(['Class 2 Weapon','Class 3 Weapon','Class 4 Weapon','Class 5 Weapon']);
+  const box=$('wchoices'); box.innerHTML=''; wLocked=false;
+  opts.forEach(txt=>{
+    const d=document.createElement('div'); d.className='choice'; d.textContent=txt;
+    d.onclick=()=>{
+      if(wLocked) return; wLocked=true;
+      const ok = (txt===answer);
+      d.classList.add(ok?'correct':'wrong');
+      stats.seen++;
+      if(ok){ stats.correct++; stats.streak++; if(stats.streak>(stats.alltime||0)) stats.alltime=stats.streak; wScore++; }
+      else { stats.streak=0; }
+      // reveal correct
+      [...box.children].forEach(el=>{ if(el.textContent===answer) el.classList.add('correct'); });
+      setStats();
+    };
+    box.appendChild(d);
+  });
+}
+$('nextWeap').onclick=()=>{ if(wi<wQ.length-1){ wi++; renderWeap(); } else { startWeap(); } };
+$('restartWeap').onclick=startWeap;
+
+// DRUG CLASS QUIZ
+let dQ=[], di=0, dScore=0, dLocked=false;
+function startDrug(){
+  const drugs = Object.keys(DRUG_CLASSES);
+  dQ = shuffle(drugs).slice(0,10);
+  di=0; dScore=0; dLocked=false; renderDrug();
+}
+function renderDrug(){
+  const name=dQ[di]; const answer=DRUG_CLASSES[name];
+  $('dtext').textContent = `Which category is "${name}"?`;
+  $('dcount').textContent = `Q${di+1}/${dQ.length}`;
+  $('dscore').textContent = `${dScore} correct`;
+  const opts = shuffle(['Class A Substance','Class B Substance','Narcotics']);
+  const box=$('dchoices'); box.innerHTML=''; dLocked=false;
+  opts.forEach(txt=>{
+    const d=document.createElement('div'); d.className='choice'; d.textContent=txt;
+    d.onclick=()=>{
+      if(dLocked) return; dLocked=true;
+      const ok = (txt===answer);
+      d.classList.add(ok?'correct':'wrong');
+      stats.seen++;
+      if(ok){ stats.correct++; stats.streak++; if(stats.streak>(stats.alltime||0)) stats.alltime=stats.streak; dScore++; }
+      else { stats.streak=0; }
+      [...box.children].forEach(el=>{ if(el.textContent===answer) el.classList.add('correct'); });
+      setStats();
+    };
+    box.appendChild(d);
+  });
+}
+$('nextDrug').onclick=()=>{ if(di<dQ.length-1){ di++; renderDrug(); } else { startDrug(); } };
+$('restartDrug').onclick=startDrug;
 
 // INIT
 updateCard(); setStats();
@@ -459,5 +608,3 @@ function autoFit(el, maxPx=34, minPx=14){
 </script>
 </body>
 </html>
-
-
