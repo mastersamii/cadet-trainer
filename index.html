@@ -225,131 +225,122 @@ background-repeat:no-repeat;background-attachment:fixed;opacity:.9}
   <canvas id="confetti" class="hidden"></canvas>
 
 <script>
-// DOM ready guard wraps all JS so elements exist before we bind listeners
+<script>
 document.addEventListener('DOMContentLoaded', () => {
-// ===== DATA (same sets) =====
-const CODES=[
-  {c:'Code 0', m:'Game Crash'},{c:'Code 1', m:'Routing Call (No Lights | No Sirens)'},{c:'Code 2', m:'Routing Call (Lights | No Sirens | Airhorn at Intersections)'},{c:'Code 3', m:'Emergency (Lights | Sirens)'},{c:'Code 4', m:'All Clear'},{c:'Code 5', m:'Initiate Felony Stop'},{c:'Code 6', m:'Investigating the Area'},{c:'10-1', m:'Unable to Copy'},{c:'10-2', m:'Loud and Clear'},{c:'10-3', m:'Stop Radio Chatter'},{c:'10-4', m:'Acknowledgment'},{c:'10-5', m:'Ballistics Testing'},{c:'10-6', m:'Busy, unless urgent'},{c:'10-7', m:'Out of Service'},{c:'10-8', m:'Back in Service'},{c:'10-9', m:'Repeat'},{c:'10-10', m:'Negative'},{c:'10-11', m:'Traffic Stop'},{c:'10-13', m:'Shots Fired'},{c:'10-14', m:'Officer Down'},{c:'10-15', m:'Suspect in Custody'},{c:'10-19', m:'Return to Station'},{c:'10-20', m:'Location'},{c:'10-22', m:'Disregard'},{c:'10-23', m:'Arrived at the Scene'},{c:'10-25', m:'Report in Person'},{c:'10-28', m:'Vehicle Registration'},{c:'10-29', m:'Warrant Check'},{c:'10-31', m:'Crime in Progress'},{c:'10-32', m:'Person with a Gun'},{c:'10-33', m:'Drug Sales'},{c:'10-39', m:'Status Report'},{c:'10-41', m:'On Duty'},{c:'10-42', m:'Off Duty'},{c:'10-47', m:'Injured Person'},{c:'10-50', m:'Vehicle Accident'},{c:'10-51', m:'Requesting a Tow Truck'},{c:'10-52', m:'EMS Needed'},{c:'10-53', m:'Requesting Supervisor'},{c:'10-55', m:'Intoxicated Driver'},{c:'10-56', m:'Intoxicated Pedestrian'},{c:'10-57', m:'Hit & Run'},{c:'10-60', m:'Stolen Vehicle'},{c:'10-66', m:'Suspicious Person'},{c:'10-67', m:'Carjacking (GTA)'},{c:'10-71', m:'Shooting'},{c:'10-72', m:'Hostage Situation'},{c:'10-76', m:'En-route'},{c:'10-77', m:'Need Backup (Non-Emergency)'},{c:'10-78', m:'Need Backup (Emergency)'},{c:'10-79', m:'ETA (Estimated Time of Arrival)'},{c:'10-80', m:'Vehicle Pursuit'},{c:'10-81', m:'Foot Pursuit'},{c:'10-90', m:'Robbery in Progress'},{c:'10-91', m:'Transport Unit'},{c:'10-94', m:'Reckless Driver'},{c:'10-99', m:'Officer in Distress'}
-];
-const CASES=[
-  {name:'Tennessee v. Garner', sum:'Deadly force to stop a fleeing suspect only if there is a good-faith belief the suspect poses a significant threat of death or serious injury to officers or others.'},
-  {name:'Maryland v. King', sum:'After arrest on probable cause, an individual may be fingerprinted, photographed, and have DNA taken without a warrant.'},
-  {name:'Florida v. J.L.', sum:'An anonymous tip alone is not enough for a search or frisk; it can help corroborate reasonable suspicion for an investigatory stop.'},
-  {name:'Mapp v. Ohio', sum:'Evidence obtained unlawfully may not be used in prosecution (exclusionary rule).'},
-  {name:'Carroll v. United States', sum:'With probable cause, a vehicle can be searched without a warrant (automobile exception). Buildings generally require a warrant.'},
-  {name:'Miranda v. Arizona', sum:'Suspects must be warned of their rights prior to questioning; otherwise statements are inadmissible unless rights were knowingly and intelligently waived.'},
-  {name:'Terry v. Ohio', sum:'With reasonable suspicion a suspect committed, is committing, or is about to commit a crime and may be armed and dangerous, an officer may conduct a stop-and-frisk based on specific articulable facts.'},
-  {name:'Whren v. U.S.', sum:'A vehicle may be stopped when there is probable cause of a traffic violation, even if the officer’s actual intent is not traffic enforcement; a traffic stop is a form of detention.'},
-  {name:'Pennsylvania v. Mimms', sum:'During a lawful traffic stop, officers may order the driver out of the car and conduct a pat-down for weapons under Terry criteria.'},
-  {name:'Maryland v. Wilson', sum:'Extends Mimms to passengers, officers may order passengers out and pat them down under Terry criteria.'},
-  {name:'Brendlin v. California', sum:'A lawful traffic stop detains passengers as well as the driver; no one is free to depart without police permission.'}
-];
+/* =============================
+   Utilities & Data
+============================= */
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const shuffle = a => { for (let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]] } return a; };
+const store = (k,v) => localStorage.setItem(k, JSON.stringify(v));
+const read  = (k,def) => JSON.parse(localStorage.getItem(k) || JSON.stringify(def));
+function seeded(seed){ return function(){ let t=seed+=0x6D2B79F5; t=Math.imul(t^t>>>15,t|1); t^=t+Math.imul(t^t>>>7, t|61); return ((t^t>>>14)>>>0)/4294967296; } }
+function seededShuffle(arr, seed){ const r=seeded(seed); const a=[...arr]; for(let i=a.length-1;i>0;i--){ const j=Math.floor(r()*(i+1)); [a[i],a[j]]=[a[j],a[i]] } return a; }
+
+/* Data (unchanged) */
+const CODES=[{c:'Code 0',m:'Game Crash'},{c:'Code 1',m:'Routing Call (No Lights | No Sirens)'},{c:'Code 2',m:'Routing Call (Lights | No Sirens | Airhorn at Intersections)'},{c:'Code 3',m:'Emergency (Lights | Sirens)'},{c:'Code 4',m:'All Clear'},{c:'Code 5',m:'Initiate Felony Stop'},{c:'Code 6',m:'Investigating the Area'},{c:'10-1',m:'Unable to Copy'},{c:'10-2',m:'Loud and Clear'},{c:'10-3',m:'Stop Radio Chatter'},{c:'10-4',m:'Acknowledgment'},{c:'10-5',m:'Ballistics Testing'},{c:'10-6',m:'Busy, unless urgent'},{c:'10-7',m:'Out of Service'},{c:'10-8',m:'Back in Service'},{c:'10-9',m:'Repeat'},{c:'10-10',m:'Negative'},{c:'10-11',m:'Traffic Stop'},{c:'10-13',m:'Shots Fired'},{c:'10-14',m:'Officer Down'},{c:'10-15',m:'Suspect in Custody'},{c:'10-19',m:'Return to Station'},{c:'10-20',m:'Location'},{c:'10-22',m:'Disregard'},{c:'10-23',m:'Arrived at the Scene'},{c:'10-25',m:'Report in Person'},{c:'10-28',m:'Vehicle Registration'},{c:'10-29',m:'Warrant Check'},{c:'10-31',m:'Crime in Progress'},{c:'10-32',m:'Person with a Gun'},{c:'10-33',m:'Drug Sales'},{c:'10-39',m:'Status Report'},{c:'10-41',m:'On Duty'},{c:'10-42',m:'Off Duty'},{c:'10-47',m:'Injured Person'},{c:'10-50',m:'Vehicle Accident'},{c:'10-51',m:'Requesting a Tow Truck'},{c:'10-52',m:'EMS Needed'},{c:'10-53',m:'Requesting Supervisor'},{c:'10-55',m:'Intoxicated Driver'},{c:'10-56',m:'Intoxicated Pedestrian'},{c:'10-57',m:'Hit & Run'},{c:'10-60',m:'Stolen Vehicle'},{c:'10-66',m:'Suspicious Person'},{c:'10-67',m:'Carjacking (GTA)'},{c:'10-71',m:'Shooting'},{c:'10-72',m:'Hostage Situation'},{c:'10-76',m:'En-route'},{c:'10-77',m:'Need Backup (Non-Emergency)'},{c:'10-78',m:'Need Backup (Emergency)'},{c:'10-79',m:'ETA (Estimated Time of Arrival)'},{c:'10-80',m:'Vehicle Pursuit'},{c:'10-81',m:'Foot Pursuit'},{c:'10-90',m:'Robbery in Progress'},{c:'10-91',m:'Transport Unit'},{c:'10-94',m:'Reckless Driver'},{c:'10-99',m:'Officer in Distress'}];
+const CASES=[{name:'Tennessee v. Garner',sum:'Deadly force to stop a fleeing suspect only if there is a good-faith belief the suspect poses a significant threat of death or serious injury to officers or others.'},{name:'Maryland v. King',sum:'After arrest on probable cause, an individual may be fingerprinted, photographed, and have DNA taken without a warrant.'},{name:'Florida v. J.L.',sum:'An anonymous tip alone is not enough for a search or frisk; it can help corroborate reasonable suspicion for an investigatory stop.'},{name:'Mapp v. Ohio',sum:'Evidence obtained unlawfully may not be used in prosecution (exclusionary rule).'},{name:'Carroll v. United States',sum:'With probable cause, a vehicle can be searched without a warrant (automobile exception). Buildings generally require a warrant.'},{name:'Miranda v. Arizona',sum:'Suspects must be warned of their rights prior to questioning; otherwise statements are inadmissible unless rights were knowingly and intelligently waived.'},{name:'Terry v. Ohio',sum:'With reasonable suspicion a suspect committed, is committing, or is about to commit a crime and may be armed and dangerous, an officer may conduct a stop-and-frisk based on specific articulable facts.'},{name:'Whren v. U.S.',sum:'A vehicle may be stopped when there is probable cause of a traffic violation, even if the officer’s actual intent is not traffic enforcement; a traffic stop is a form of detention.'},{name:'Pennsylvania v. Mimms',sum:'During a lawful traffic stop, officers may order the driver out of the car and conduct a pat-down for weapons under Terry criteria.'},{name:'Maryland v. Wilson',sum:'Extends Mimms to passengers, officers may order passengers out and pat them down under Terry criteria.'},{name:'Brendlin v. California',sum:'A lawful traffic stop detains passengers as well as the driver; no one is free to depart without police permission.'}];
 const CONTRA_YES=['red decryption key','blue decryption key','green decryption key','chip','raspberry chip','fake plates','meth table','catalytic converter','pager','Ceramic Pistol','Combat Pistol','Double Action Revolver','Heavy Pistol','Heavy Revolver','Heavy Revolver Mk II','Marksman Pistol','Navy Revolver','Perico Pistol','Pistol .50','SNS Pistol Mk II','WM 29 Pistol','Pistol Mk II','Beretta M9A3','AP Pistol','Assault Shotgun','Assault SMG','Bullpup Shotgun','Combat PDW','Combat Shotgun','Double Barrel Shotgun','Gusenberg Sweeper','Heavy Shotgun','Machine Pistol','Micro SMG','Mini SMG','Pump Shotgun','Pump Shotgun Mk II','Sawed-Off Shotgun','SMG','SMG Mk II','Sweeper Shotgun','Tactical SMG','Advanced Rifle','Assault Rifle','Assault Rifle Mk II','Battle Rifle','Bullpup Rifle','Bullpup Rifle Mk II','Carbine Rifle','Carbine Rifle Mk II','Heavy Rifle','Heavy Sniper','Heavy Sniper Mk II','Marksman Rifle','Marksman Rifle Mk II','Military Rifle','Musket','Precision Rifle','Service Carbine','Sniper Rifle','Special Carbine','Special Carbine Mk II','Remington Rifle','Compact Rifle','BZ Gas Grenades','Compact Grenade','Grenade','Molotov Cocktail','Pipe Bombs','Proximity Mines','Sticky Bomb','Grill bombs','Box Bombs','melee weapon','jerry can','lighter','alcohol','handcuffs','bolt cutters','lockpicks'];
 const CONTRA_NO=['cigarettes','food','drinks','lunchbox','camera','pets','skateboard','remote','phone','radio','med kit','armor','bandaid','toys','wallet'];
 const STEPS=['Go to the door','Introduce yourself','Make contact with the robber','Get proof of robbery','Ask them how many inside and outside','Ask them to speak to the hostage','See if hostage has been treated okay, do they need medical water or food?','Get demands from the robbers','Relay information to scene command','Relay information to robbers from scene command','Wait for scene command to set up a pursuit line up'];
-const WEAPON_CLASSES={ 'Ceramic Pistol':'Class 2 Weapon','Combat Pistol':'Class 2 Weapon','Double Action Revolver':'Class 2 Weapon','Heavy Pistol':'Class 2 Weapon','Heavy Revolver':'Class 2 Weapon','Heavy Revolver Mk II':'Class 2 Weapon','Marksman Pistol':'Class 2 Weapon','Navy Revolver':'Class 2 Weapon','Perico Pistol':'Class 2 Weapon','Pistol .50':'Class 2 Weapon','SNS Pistol Mk II':'Class 2 Weapon','WM 29 Pistol':'Class 2 Weapon','Pistol Mk II':'Class 2 Weapon','Beretta M9A3':'Class 2 Weapon','AP Pistol':'Class 3 Weapon','Assault Shotgun':'Class 3 Weapon','Assault SMG':'Class 3 Weapon','Bullpup Shotgun':'Class 3 Weapon','Combat PDW':'Class 3 Weapon','Combat Shotgun':'Class 3 Weapon','Double Barrel Shotgun':'Class 3 Weapon','Gusenberg Sweeper':'Class 3 Weapon','Heavy Shotgun':'Class 3 Weapon','Machine Pistol':'Class 3 Weapon','Micro SMG':'Class 3 Weapon','Mini SMG':'Class 3 Weapon','Pump Shotgun':'Class 3 Weapon','Pump Shotgun Mk II':'Class 3 Weapon','Sawed-Off Shotgun':'Class 3 Weapon','SMG':'Class 3 Weapon','SMG Mk II':'Class 3 Weapon','Sweeper Shotgun':'Class 3 Weapon','Tactical SMG':'Class 3 Weapon','Advanced Rifle':'Class 4 Weapon','Assault Rifle':'Class 4 Weapon','Assault Rifle Mk II':'Class 4 Weapon','Battle Rifle':'Class 4 Weapon','Bullpup Rifle':'Class 4 Weapon','Bullpup Rifle Mk II':'Class 4 Weapon','Carbine Rifle':'Class 4 Weapon','Carbine Rifle Mk II':'Class 4 Weapon','Heavy Rifle':'Class 4 Weapon','Heavy Sniper':'Class 4 Weapon','Heavy Sniper Mk II':'Class 4 Weapon','Marksman Rifle':'Class 4 Weapon','Marksman Rifle Mk II':'Class 4 Weapon','Military Rifle':'Class 4 Weapon','Musket':'Class 4 Weapon','Precision Rifle':'Class 4 Weapon','Service Carbine':'Class 4 Weapon','Sniper Rifle':'Class 4 Weapon','Special Carbine':'Class 4 Weapon','Special Carbine Mk II':'Class 4 Weapon','Remington Rifle':'Class 4 Weapon','Compact Rifle':'Class 4 Weapon','BZ Gas Grenades':'Class 5 Weapon','Compact Grenade':'Class 5 Weapon','Grenade':'Class 5 Weapon','Molotov Cocktail':'Class 5 Weapon','Pipe Bombs':'Class 5 Weapon','Proximity Mines':'Class 5 Weapon','Sticky Bomb':'Class 5 Weapon','Grill bombs':'Class 5 Weapon','Box Bombs':'Class 5 Weapon'};
-const DRUG_CLASSES={ 'Cocaine':'Class A Substance','Crack':'Class A Substance','Methamphetamine (Meth)':'Class A Substance','Psilocybe Cyanescens (Shrooms)':'Class A Substance','Marijuana (Weed)':'Class B Substance','Lysergic Acid Diethylamide (Acid)':'Class B Substance','Lean':'Class B Substance','Painkillers':'Narcotics','Antibiotics':'Narcotics','Fentanyl':'Narcotics','OxyContin (Oxy)':'Narcotics'};
+const WEAPON_CLASSES={'Ceramic Pistol':'Class 2 Weapon','Combat Pistol':'Class 2 Weapon','Double Action Revolver':'Class 2 Weapon','Heavy Pistol':'Class 2 Weapon','Heavy Revolver':'Class 2 Weapon','Heavy Revolver Mk II':'Class 2 Weapon','Marksman Pistol':'Class 2 Weapon','Navy Revolver':'Class 2 Weapon','Perico Pistol':'Class 2 Weapon','Pistol .50':'Class 2 Weapon','SNS Pistol Mk II':'Class 2 Weapon','WM 29 Pistol':'Class 2 Weapon','Pistol Mk II':'Class 2 Weapon','Beretta M9A3':'Class 2 Weapon','AP Pistol':'Class 3 Weapon','Assault Shotgun':'Class 3 Weapon','Assault SMG':'Class 3 Weapon','Bullpup Shotgun':'Class 3 Weapon','Combat PDW':'Class 3 Weapon','Combat Shotgun':'Class 3 Weapon','Double Barrel Shotgun':'Class 3 Weapon','Gusenberg Sweeper':'Class 3 Weapon','Heavy Shotgun':'Class 3 Weapon','Machine Pistol':'Class 3 Weapon','Micro SMG':'Class 3 Weapon','Mini SMG':'Class 3 Weapon','Pump Shotgun':'Class 3 Weapon','Pump Shotgun Mk II':'Class 3 Weapon','Sawed-Off Shotgun':'Class 3 Weapon','SMG':'Class 3 Weapon','SMG Mk II':'Class 3 Weapon','Sweeper Shotgun':'Class 3 Weapon','Tactical SMG':'Class 3 Weapon','Advanced Rifle':'Class 4 Weapon','Assault Rifle':'Class 4 Weapon','Assault Rifle Mk II':'Class 4 Weapon','Battle Rifle':'Class 4 Weapon','Bullpup Rifle':'Class 4 Weapon','Bullpup Rifle Mk II':'Class 4 Weapon','Carbine Rifle':'Class 4 Weapon','Carbine Rifle Mk II':'Class 4 Weapon','Heavy Rifle':'Class 4 Weapon','Heavy Sniper':'Class 4 Weapon','Heavy Sniper Mk II':'Class 4 Weapon','Marksman Rifle':'Class 4 Weapon','Marksman Rifle Mk II':'Class 4 Weapon','Military Rifle':'Class 4 Weapon','Musket':'Class 4 Weapon','Precision Rifle':'Class 4 Weapon','Service Carbine':'Class 4 Weapon','Sniper Rifle':'Class 4 Weapon','Special Carbine':'Class 4 Weapon','Special Carbine Mk II':'Class 4 Weapon','Remington Rifle':'Class 4 Weapon','Compact Rifle':'Class 4 Weapon','BZ Gas Grenades':'Class 5 Weapon','Compact Grenade':'Class 5 Weapon','Grenade':'Class 5 Weapon','Molotov Cocktail':'Class 5 Weapon','Pipe Bombs':'Class 5 Weapon','Proximity Mines':'Class 5 Weapon','Sticky Bomb':'Class 5 Weapon','Grill bombs':'Class 5 Weapon','Box Bombs':'Class 5 Weapon'};
+const DRUG_CLASSES={'Cocaine':'Class A Substance','Crack':'Class A Substance','Methamphetamine (Meth)':'Class A Substance','Psilocybe Cyanescens (Shrooms)':'Class A Substance','Marijuana (Weed)':'Class B Substance','Lysergic Acid Diethylamide (Acid)':'Class B Substance','Lean':'Class B Substance','Painkillers':'Narcotics','Antibiotics':'Narcotics','Fentanyl':'Narcotics','OxyContin (Oxy)':'Narcotics'};
+const SCENARIOS=[{id:'robbery_247',feed:'DISPATCH: <b>10-90</b> at Vinewood 24/7. Two masked. One hostage.',steps:[{type:'mc',prompt:'What is the first step?',options:STEPS.slice(0,4),correct:STEPS[0],teach:'Establish presence calmly at the door before engagement.'},{type:'mc',prompt:'Passengers free to leave during a stop?',options:['Yes','No'],correct:'No',teach:'Brendlin v. California: passengers are detained during a lawful stop.'},{type:'yn',prompt:'Confiscate fake plates from suspect vehicle?',correct:true,teach:'Fake plates = contraband; seize on arrest.'}]},{id:'traffic_warrant',feed:'DISPATCH: <b>10-11</b> on black Sultan. RO returns <b>10-29</b> positive.',steps:[{type:'mc',prompt:'May you order the driver out?',options:['Yes','No'],correct:'Yes',teach:'Pennsylvania v. Mimms allows ordering driver out during lawful stop.'},{type:'mc',prompt:'And passengers?',options:['Yes','No'],correct:'Yes',teach:'Maryland v. Wilson extends to passengers.'},{type:'mc',prompt:'Primary 10-code for checking wanted?',options:['10-20','10-29','10-39','10-28'],correct:'10-29',teach:'10-29 = Warrant check.'}]},{id:'suspicious_person',feed:'DISPATCH: <b>10-66</b> outside Legion. Bulge in waistband reported.',steps:[{type:'mc',prompt:'Legal basis for a frisk?',options:['Probable Cause','Reasonable Suspicion','Hunch','Consent only'],correct:'Reasonable Suspicion',teach:'Terry v. Ohio permits stop-and-frisk with RS of armed/dangerous.'},{type:'yn',prompt:'Anonymous tip alone justifies frisk?',correct:false,teach:'Florida v. J.L.: anonymous tip alone is insufficient.'},{type:'mc',prompt:'10-code to report weapon seen?',options:['10-32','10-33','10-13','10-39'],correct:'10-32',teach:'10-32 = Person with a gun.'}]}];
 
-// Scenarios (micro-sims)
-const SCENARIOS=[{
-  id:'robbery_247', feed:'DISPATCH: <b>10-90</b> at Vinewood 24/7. Two masked. One hostage.',
-  steps:[
-    {type:'mc', prompt:'What is the first step?', options:STEPS.slice(0,4), correct:STEPS[0], teach:'Establish presence calmly at the door before engagement.'},
-    {type:'mc', prompt:'Passengers free to leave during a stop?', options:['Yes','No'], correct:'No', teach:'Brendlin v. California: passengers are detained during a lawful stop.'},
-    {type:'yn', prompt:'Confiscate fake plates from suspect vehicle?', correct:true, teach:'Fake plates = contraband; seize on arrest.'}
-  ]
-}, {
-  id:'traffic_warrant', feed:'DISPATCH: <b>10-11</b> on black Sultan. RO returns <b>10-29</b> positive.',
-  steps:[
-    {type:'mc', prompt:'May you order the driver out?', options:['Yes','No'], correct:'Yes', teach:'Pennsylvania v. Mimms allows ordering driver out during lawful stop.'},
-    {type:'mc', prompt:'And passengers?', options:['Yes','No'], correct:'Yes', teach:'Maryland v. Wilson extends to passengers.'},
-    {type:'mc', prompt:'Primary 10-code for checking wanted?', options:['10-20','10-29','10-39','10-28'], correct:'10-29', teach:'10-29 = Warrant check.'}
-  ]
-}, {
-  id:'suspicious_person', feed:'DISPATCH: <b>10-66</b> outside Legion. Bulge in waistband reported.',
-  steps:[
-    {type:'mc', prompt:'Legal basis for a frisk?', options:['Probable Cause','Reasonable Suspicion','Hunch','Consent only'], correct:'Reasonable Suspicion', teach:'Terry v. Ohio permits stop-and-frisk with RS of armed/dangerous.'},
-    {type:'yn', prompt:'Anonymous tip alone justifies frisk?', correct:false, teach:'Florida v. J.L.: anonymous tip alone is insufficient.'},
-    {type:'mc', prompt:'10-code to report weapon seen?', options:['10-32','10-33','10-13','10-39'], correct:'10-32', teach:'10-32 = Person with a gun.'}
-  ]
-}];
-
-// ===== UTIL =====
-const $=s=>document.querySelector(s); const $$=s=>[...document.querySelectorAll(s)];
-const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
-const store=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
-const read=(k,def)=>JSON.parse(localStorage.getItem(k)||JSON.stringify(def));
-function seeded(seed){ // mulberry32
-  return function(){ let t=seed+=0x6D2B79F5; t=Math.imul(t^t>>>15, t|1); t^=t+Math.imul(t^t>>>7, t|61); return ((t^t>>>14)>>>0)/4294967296; }
-}
-function seededShuffle(arr, seed){ const r=seeded(seed); let a=[...arr]; for(let i=a.length-1;i>0;i--){ const j=Math.floor(r()*(i+1)); [a[i],a[j]]=[a[j],a[i]] } return a }
-
-// Sounds
-let SOUND_ON = read('ct_sound', false); let ctx;
-function beep(freq=880, ms=110, type='sine', gain=.05){ if(!SOUND_ON) return; ctx=ctx||new (window.AudioContext||window.webkitAudioContext)(); const o=ctx.createOscillator(); const g=ctx.createGain(); o.type=type; o.frequency.value=freq; o.connect(g); g.connect(ctx.destination); g.gain.value=gain; o.start(); setTimeout(()=>o.stop(), ms); }
-$('#mute').addEventListener('click',()=>{ SOUND_ON=!SOUND_ON; store('ct_sound',SOUND_ON); $('#mute').textContent = SOUND_ON? '🔈 Sound' : '🔇 Muted'; });
-$('#mute').textContent = SOUND_ON? '🔈 Sound' : '🔇 Muted';
-
-// Accessibility toggles
-$('#contrast').addEventListener('click',()=>{ const cur=document.body.getAttribute('data-contrast'); const nxt = cur==='high'?'normal':'high'; document.body.setAttribute('data-contrast', nxt); });
-$('#cb').addEventListener('click',()=>{ const cur=document.body.getAttribute('data-cb'); const nxt = cur==='safe'?'off':'safe'; document.body.setAttribute('data-cb', nxt); });
-$('#od').addEventListener('click',()=>{ const cur=document.body.getAttribute('data-font'); const nxt = cur==='od'?'' : 'od'; document.body.setAttribute('data-font', nxt); });
-
-// Themes
-$$('.chip[data-theme]').forEach(ch=>ch.addEventListener('click',()=>{ $$('.chip[data-theme]').forEach(x=>x.classList.remove('sel')); ch.classList.add('sel'); document.body.setAttribute('data-theme', ch.dataset.theme); }));
-
-// Quick Reference Drawer
-$('#openRef').onclick=()=>refOpen(true); $('#closeRef').onclick=()=>refOpen(false); $('#help').onclick=()=>refOpen(true);
-function refOpen(open){ const d=$('#ref'); d.classList.toggle('open', open); d.setAttribute('aria-hidden', !open); }
-function renderRef(){ const rc=$('#refCodes'); rc.innerHTML=CODES.map(x=>`<div><b>${x.c}</b> — ${x.m}</div>`).join(''); const rcas=$('#refCases'); rcas.innerHTML=CASES.map(x=>`<div><b>${x.name}</b> — ${x.sum}</div>`).join(''); }
-
-// Stats
-let stats = read('cadet_stats', {seen:0,correct:0,streak:0,alltime:0});
+/* =============================
+   Global State & Helpers
+============================= */
+let stats = read('cadet_stats', {seen:0, correct:0, streak:0, alltime:0});
 function setStats(){ store('cadet_stats', stats); renderGlobalStats(); renderLiveStats(); }
-function renderGlobalStats(){ const g=$('#globalStats'); if(!g) return; g.innerHTML=''; const items=[['Seen',stats.seen],['Correct',stats.correct],['Streak',stats.streak],['All‑time 🏆',stats.alltime]]; items.forEach(([k,v])=>{ const d=document.createElement('div'); d.className='stat'; d.textContent=`${k}: ${v}`; g.appendChild(d); }); }
-function renderLiveStats(){ const g=$('#liveStats'); if(!g) return; g.innerHTML=''; const items=[['Seen',stats.seen],['Correct',stats.correct],['Streak',stats.streak],['All‑time 🏆',stats.alltime]]; items.forEach(([k,v])=>{ const d=document.createElement('div'); d.className='stat'; d.textContent=`${k}: ${v}`; g.appendChild(d); }); }
-
-// Progress
+function renderGlobalStats(){ const g=$('#globalStats'); if(!g) return; g.innerHTML=''; [['Seen',stats.seen],['Correct',stats.correct],['Streak',stats.streak],['All-time 🏆',stats.alltime]].forEach(([k,v])=>{ const d=document.createElement('div'); d.className='stat'; d.textContent=`${k}: ${v}`; g.appendChild(d); }); }
+function renderLiveStats(){ const g=$('#liveStats'); if(!g) return; g.innerHTML=''; [['Seen',stats.seen],['Correct',stats.correct],['Streak',stats.streak],['All-time 🏆',stats.alltime]].forEach(([k,v])=>{ const d=document.createElement('div'); d.className='stat'; d.textContent=`${k}: ${v}`; g.appendChild(d); }); }
 function setProgress(now,total){ const pct = total? Math.round((now/total)*100) : 0; $('#progress').style.width = pct + '%'; }
+function setFeed(text){ const el=$('#feed'); if(el) el.innerHTML = text || ''; }
 
-// Confetti
-const conf = $('#confetti');
-let cctx = conf ? conf.getContext('2d') : null;
-function fireConfetti(){ if(!conf || !cctx) return;  const W=conf.width=window.innerWidth; const H=conf.height=window.innerHeight; conf.classList.remove('hidden'); const pieces=[...Array(100)].map(()=>({x:Math.random()*W,y:-20+Math.random()*40, s:3+Math.random()*6, v:2+Math.random()*4, a:Math.random()*Math.PI})); let t=0; (function step(){ cctx.clearRect(0,0,W,H); pieces.forEach(p=>{ p.y+=p.v; p.x+=Math.sin((t+p.a)/10)*2; cctx.fillStyle=`hsl(${(t*3+p.x)%360} 90% 60%)`; cctx.fillRect(p.x,p.y,p.s,p.s); }); t++; if(t<120) requestAnimationFrame(step); else conf.classList.add('hidden'); })(); }
+/* Sounds (muted by default) */
+let SOUND_ON = read('ct_sound', false), ctx;
+function beep(freq=880, ms=110, type='sine', gain=.05){
+  if(!SOUND_ON) return;
+  ctx = ctx || new (window.AudioContext||window.webkitAudioContext)();
+  const o=ctx.createOscillator(), g=ctx.createGain();
+  o.type=type; o.frequency.value=freq; o.connect(g); g.connect(ctx.destination); g.gain.value=gain; o.start(); setTimeout(()=>o.stop(), ms);
+}
+const muteBtn = $('#mute');
+if(muteBtn){
+  muteBtn.textContent = SOUND_ON? '🔈 Sound' : '🔇 Muted';
+  muteBtn.addEventListener('click', ()=>{ SOUND_ON=!SOUND_ON; store('ct_sound',SOUND_ON); muteBtn.textContent = SOUND_ON? '🔈 Sound' : '🔇 Muted'; });
+}
 
-// Dispatcher feed helper
-function setFeed(text){ $('#feed').innerHTML = text ? text : '' }
-
-// Home navigation
-$$('.tile').forEach(t=> t.addEventListener('click', ()=> startMode(t.getAttribute('data-go'))));
-$('#backHome').addEventListener('click', ()=> showHome());
-function showHome(){ $('#home').classList.remove('hidden'); $('#game').classList.add('hidden'); setFeed(''); }
-$('#restart').addEventListener('click',()=> startMode(mode));
-
-// Hotkeys
-document.addEventListener('keydown', (e)=>{
-  if(e.key==='?'){ refOpen(true); }
-  if(e.key.toLowerCase()==='h'){ showHome(); }
-  if(e.key.toLowerCase()==='r'){ $('#restart')?.click(); }
+/* Theme / Accessibility */
+$$('.chip[data-theme]').forEach(ch => ch.addEventListener('click', () => {
+  $$('.chip[data-theme]').forEach(x=>x.classList.remove('sel'));
+  ch.classList.add('sel');
+  document.body.setAttribute('data-theme', ch.dataset.theme);
+}));
+$('#contrast')?.addEventListener('click', ()=> {
+  const cur = document.body.getAttribute('data-contrast');
+  document.body.setAttribute('data-contrast', cur==='high' ? 'normal' : 'high');
+});
+$('#cb')?.addEventListener('click', ()=> {
+  const cur = document.body.getAttribute('data-cb');
+  document.body.setAttribute('data-cb', cur==='safe' ? 'off' : 'safe');
+});
+$('#od')?.addEventListener('click', ()=> {
+  const cur = document.body.getAttribute('data-font');
+  document.body.setAttribute('data-font', cur==='od' ? '' : 'od');
 });
 
-// ====== Spaced Repetition Deck ======
-let SR = read('cadet_sr', {}); // key = code, val = {box, interval, dueAt, lapses, correct, seen}
-function ensureSR(){ CODES.forEach(x=>{ if(!SR[x.c]) SR[x.c] = {box:1, interval:1, dueAt:0, lapses:0, correct:0, seen:0}; }); }
-function schedule(card, grade){ // grade: 0 miss, 1 so-so, 2 got it
-  const s = SR[card.c]; const now = Date.now(); s.seen++; if(grade===0){ s.box=1; s.interval=1; s.lapses++; s.dueAt = now + 24*3600*1000; }
-  if(grade===1){ s.box=Math.max(1, s.box); s.interval = s.interval<2? 2 : Math.round(s.interval*1.6); s.correct++; s.dueAt = now + s.interval*24*3600*1000; }
-  if(grade===2){ s.box = s.box+1; s.interval = s.interval<3? 3 : Math.round(s.interval*2.4); s.correct++; s.dueAt = now + s.interval*24*3600*1000; }
+/* Reference Drawer */
+function refOpen(open){ const d=$('#ref'); if(!d) return; d.classList.toggle('open', !!open); d.setAttribute('aria-hidden', !open); }
+$('#openRef')?.addEventListener('click', ()=>refOpen(true));
+$('#closeRef')?.addEventListener('click', ()=>refOpen(false));
+$('#help')?.addEventListener('click', ()=>refOpen(true));
+function renderRef(){
+  const rc=$('#refCodes'), rcas=$('#refCases');
+  if(rc) rc.innerHTML = CODES.map(x=>`<div><b>${x.c}</b> — ${x.m}</div>`).join('');
+  if(rcas) rcas.innerHTML = CASES.map(x=>`<div><b>${x.name}</b> — ${x.sum}</div>`).join('');
+}
+
+/* Confetti (null-safe) */
+const conf = $('#confetti');
+let cctx = conf ? conf.getContext('2d') : null;
+function fireConfetti(){
+  if(!conf || !cctx) return;
+  const W=conf.width=window.innerWidth, H=conf.height=window.innerHeight;
+  conf.classList.remove('hidden');
+  const pieces=[...Array(100)].map(()=>({x:Math.random()*W,y:-20+Math.random()*40,s:3+Math.random()*6,v:2+Math.random()*4,a:Math.random()*Math.PI}));
+  let t=0;
+  (function step(){
+    cctx.clearRect(0,0,W,H);
+    pieces.forEach(p=>{ p.y+=p.v; p.x+=Math.sin((t+p.a)/10)*2; cctx.fillStyle=`hsl(${(t*3+p.x)%360} 90% 60%)`; cctx.fillRect(p.x,p.y,p.s,p.s); });
+    t++; if(t<120) requestAnimationFrame(step); else conf.classList.add('hidden');
+  })();
+}
+
+/* SR Deck */
+let SR = read('cadet_sr', {});
+function ensureSR(){ CODES.forEach(x=>{ if(!SR[x.c]) SR[x.c]={box:1,interval:1,dueAt:0,lapses:0,correct:0,seen:0}; }); }
+function schedule(card, grade){
+  const s=SR[card.c]; const now=Date.now(); s.seen++;
+  if(grade===0){ s.box=1; s.interval=1; s.lapses++; s.dueAt = now + 24*3600*1000; }
+  if(grade===1){ s.box=Math.max(1,s.box); s.interval=s.interval<2?2:Math.round(s.interval*1.6); s.correct++; s.dueAt = now + s.interval*24*3600*1000; }
+  if(grade===2){ s.box=s.box+1; s.interval=s.interval<3?3:Math.round(s.interval*2.4); s.correct++; s.dueAt = now + s.interval*24*3600*1000; }
   store('cadet_sr', SR);
 }
-function todaysDeck(n=20){ const now=Date.now(); const due = CODES.filter(x=> (SR[x.c]?.dueAt||0) <= now); const weak = [...CODES].sort((a,b)=>((SR[a.c]?.correct||0)/(SR[a.c]?.seen||1)) - ((SR[b.c]?.correct||0)/(SR[b.c]?.seen||1))); const pick=[...due.slice(0,n), ...weak.filter(x=>!due.includes(x)).slice(0, Math.max(0,n-due.length))]; return pick.length? pick : shuffle([...CODES]).slice(0,n); }
+function todaysDeck(n=20){
+  const now=Date.now();
+  const due = CODES.filter(x => (SR[x.c]?.dueAt||0) <= now);
+  const weak = [...CODES].sort((a,b)=>((SR[a.c]?.correct||0)/(SR[a.c]?.seen||1))-((SR[b.c]?.correct||0)/(SR[b.c]?.seen||1)));
+  const pick=[...due.slice(0,n), ...weak.filter(x=>!due.includes(x)).slice(0, Math.max(0,n-due.length))];
+  return pick.length? pick : shuffle([...CODES]).slice(0,n);
+}
 
-// ===== GAME ENGINE =====
-const META={
-  flash:{icon:'🃏',title:'Flashcards — 10‑Codes'},
-  learn:{icon:'🧠',title:'Learn (Spaced) — Today\'s 20'},
-  quiz:{icon:'❓',title:'Multiple Choice — 10‑Codes'},
-  match:{icon:'🧩',title:'Matching — 10‑Codes'},
+/* Game Engine */
+const META = {
+  learn:{icon:'🧠',title:"Learn (Spaced) — Today's 20"},
+  quiz:{icon:'❓',title:'Multiple Choice — 10-Codes'},
+  match:{icon:'🧩',title:'Matching — 10-Codes'},
   speed:{icon:'⏱️',title:'Speed Round — 30s'},
   daily:{icon:'📅',title:'Daily Challenge'},
   caselaw:{icon:'⚖️',title:'Case Law Quiz'},
@@ -359,39 +350,59 @@ const META={
   drugs:{icon:'💊',title:'Drug Category Quiz'},
   scenarios:{icon:'🚨',title:'Scenario Callouts'}
 };
-let mode='learn';
-function startMode(m){ ensureSR(); mode=m; const meta=META[m]; $('#gIcon').textContent=meta.icon; $('#gTitle').textContent=meta.title; $('#home').classList.add('hidden'); $('#game').classList.remove('hidden'); $('#stage').innerHTML=''; setProgress(0,1); renderRef(); setFeed('');
-  switch(m){
-    case 'learn': return runLearn();
-    case 'quiz': return runQuiz();
-    case 'match': return runMatch();
-    case 'speed': return runSpeed();
-    case 'daily': return runDaily();
-    case 'caselaw': return runCase();
-    case 'contraband': return runContra();
-    case 'negotiations': return runNeg();
-    case 'weapons': return runWeap();
-    case 'drugs': return runDrug();
-    case 'scenarios': return runScenarios();
-  }
+let mode = 'learn';
+
+function setHeader(m){
+  const meta = META[m]; if(!meta) return;
+  $('#gIcon').textContent = meta.icon;
+  $('#gTitle').textContent = meta.title;
 }
 
-// ===== LEARN (SRS) =====
+function showHome(){ $('#home').classList.remove('hidden'); $('#game').classList.add('hidden'); setFeed(''); }
+function startMode(m){
+  ensureSR(); mode = m; setHeader(m);
+  $('#home').classList.add('hidden'); $('#game').classList.remove('hidden');
+  $('#stage').innerHTML=''; setProgress(0,1); renderRef(); setFeed('');
+  ({
+    learn:runLearn, quiz:runQuiz, match:runMatch, speed:runSpeed, daily:runDaily,
+    caselaw:runCase, contraband:runContra, negotiations:runNeg, weapons:runWeap, drugs:runDrug, scenarios:runScenarios
+  }[m])?.();
+}
+
+/* Event delegation for robust clicks */
+document.addEventListener('click', (e)=>{
+  const tile = e.target.closest('.tile');
+  if(tile) return startMode(tile.getAttribute('data-go'));
+
+  if(e.target.id==='backHome') return showHome();
+  if(e.target.id==='restart')  return startMode(mode);
+  if(e.target.id==='openRef')  return refOpen(true);
+  if(e.target.id==='closeRef') return refOpen(false);
+});
+
+/* Hotkeys */
+document.addEventListener('keydown', (e)=>{
+  if(e.key==='?') refOpen(true);
+  if(e.key.toLowerCase()==='h') showHome();
+  if(e.key.toLowerCase()==='r') $('#restart')?.click();
+});
+
+/* ==== Mode Runners ==== */
 function runLearn(){
-  let deck = todaysDeck(20), i=0; const stage=$('#stage');
-  stage.innerHTML = `
-    <div class="prompt">Today\'s deck focuses on due cards + your weakest items.</div>
+  let deck=todaysDeck(20), i=0; const stage=$('#stage');
+  stage.innerHTML=`
+    <div class="prompt">Today's deck focuses on due cards + your weakest items.</div>
     <div class="cardwrap" style="margin-top:10px">
       <div class="card"><div class="flipper" id="flip"><div class="face front" id="front">Tap or Space to flip</div><div class="face back" id="back"></div></div></div>
       <div style="display:flex; gap:8px; margin-top:12px; justify-content:center">
         <button class="btn ghost" id="again">Missed</button>
-        <button class="btn ghost" id="so">So‑so</button>
+        <button class="btn ghost" id="so">So-so</button>
         <button class="btn" id="good">Got it</button>
       </div>
     </div>`;
   const front=$('#front'), back=$('#back'), flip=$('#flip');
-  function show(){ const it=deck[i]; front.textContent=it.c; back.textContent=it.m; flip.classList.remove('flipped'); setProgress(i, deck.length); setFeed(`DISPATCH: Study item <b>${i+1}/${deck.length}</b>.`); }
-  function next(){ i++; if(i>=deck.length){ fireConfetti(); stage.innerHTML = `<div class="prompt">Great job. You cleared Today\'s 20. Come back later when cards are due.</div>`; return; } show(); }
+  function show(){ const it=deck[i]; front.textContent=it.c; back.textContent=it.m; flip.classList.remove('flipped'); setProgress(i, deck.length); setFeed(\`DISPATCH: Study item <b>\${i+1}/\${deck.length}</b>.\`); }
+  function next(){ i++; if(i>=deck.length){ fireConfetti(); stage.innerHTML = '<div class="prompt">Great job. You cleared Today\\'s 20. Come back later when cards are due.</div>'; return; } show(); }
   flip.addEventListener('click',()=>{ flip.classList.toggle('flipped'); beep(780,80,'sine',.03); });
   document.onkeydown=(e)=>{ if(mode!=='learn') return; if(e.code==='Space'){ e.preventDefault(); flip.click(); } if(e.key==='1') $('#again').click(); if(e.key==='2') $('#so').click(); if(e.key==='3') $('#good').click(); };
   $('#again').onclick=()=>{ const it=deck[i]; stats.seen++; stats.streak=0; schedule(it,0); setStats(); next(); };
@@ -399,61 +410,57 @@ function runLearn(){
   $('#good').onclick=()=>{ const it=deck[i]; stats.seen++; stats.correct++; stats.streak++; if(stats.streak>(stats.alltime||0)) stats.alltime=stats.streak; schedule(it,2); setStats(); next(); };
   show();
 }
-
-// ===== QUIZ (10‑Codes) =====
-function runQuiz(){ let qs=shuffle([...CODES]).slice(0,10), i=0, locked=false; const stage=$('#stage');
-  render(); function render(){ const q=qs[i]; setFeed(`DISPATCH: Unit check — What is <b>${q.c}</b>?`); stage.innerHTML=`
+function runQuiz(){
+  let qs=shuffle([...CODES]).slice(0,10), i=0, locked=false; const stage=$('#stage');
+  render(); function render(){ const q=qs[i]; setFeed(\`DISPATCH: Unit check — What is <b>\${q.c}</b>?\`); stage.innerHTML=`
     <div class="prompt">What does <span style="color:var(--accent)">${q.c}</span> mean?</div>
     <div class="choices" id="box"></div>
     <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:12px">
       <button class="btn ghost" id="restartQ">Restart</button>
       <button class="btn" id="next">Next</button>
-    </div>`; const opts=shuffle([q, ...shuffle(CODES.filter(x=>x!==q)).slice(0,3)]).map(o=>o.m); const box=$('#box'); box.innerHTML=''; locked=false;
-    opts.forEach((txt,idx)=>{ const d=document.createElement('div'); d.className='choice'; d.textContent=txt; d.onclick=()=>pick(txt===q.m, d, q.m); box.appendChild(d); d.setAttribute('data-key', idx+1); });
+    </div>`; const opts=shuffle([q,...shuffle(CODES.filter(x=>x!==q)).slice(0,3)]).map(o=>o.m); const box=$('#box'); box.innerHTML=''; locked=false;
+    opts.forEach((txt,idx)=>{ const d=document.createElement('div'); d.className='choice'; d.textContent=txt; d.onclick=()=>pick(txt===q.m,d,q.m); box.appendChild(d); d.setAttribute('data-key', idx+1); });
     $('#next').onclick=next; $('#restartQ').onclick=()=>runQuiz(); setProgress(i, qs.length);
-    document.onkeydown=(e)=>{ if(mode!=='quiz' || locked) return; const idx=parseInt(e.key)-1; if(idx>=0 && idx<box.children.length){ box.children[idx].click(); } if(e.key==='n') next(); };
+    document.onkeydown=(e)=>{ if(mode!=='quiz'||locked) return; const idx=parseInt(e.key)-1; if(idx>=0&&idx<box.children.length){ box.children[idx].click(); } if(e.key==='n') next(); };
   }
   function pick(ok, el, correct){ if(locked) return; locked=true; stats.seen++; if(ok){ el.classList.add('correct'); stats.correct++; stats.streak++; beep(880,90,'square',.03); fireConfetti(); } else { el.classList.add('wrong'); $$('#box .choice').forEach(x=>{ if(x.textContent===correct) x.classList.add('correct'); }); stats.streak=0; beep(220,120,'sawtooth',.03);} if(stats.streak>(stats.alltime||0)) stats.alltime=stats.streak; setStats(); }
   function next(){ if(i<qs.length-1){ i++; render(); } else { runQuiz(); } }
 }
-
-// ===== MATCHING =====
-function runMatch(){ const grid=document.createElement('div'); grid.className='choices'; const stage=$('#stage'); stage.innerHTML=''; stage.appendChild(grid); const pairs=shuffle([...CODES]).slice(0,8); const left=pairs.map(p=>({t:p.c,k:p.c,side:'L'})); const right=shuffle(pairs.map(p=>({t:p.m,k:p.c,side:'R'}))); const items=shuffle([...left,...right]); let sel=null; let solved=new Set(); setProgress(0,1); setFeed('DISPATCH: Pair codes to clear the board.');
-  items.forEach(it=>{ const d=document.createElement('div'); d.className='choice'; d.textContent=it.t; d.dataset.key=it.k; d.dataset.side=it.side; d.onclick=()=>{ if(solved.has(d.dataset.key)) return; if(!sel){ sel=d; d.style.outline=`2px solid var(--accent)`; return; } if(sel===d){ sel.style.outline=''; sel=null; return; } stats.seen++; const ok=(sel.dataset.key===d.dataset.key && sel.dataset.side!==d.dataset.side);
-      if(ok){ d.classList.add('correct'); sel.classList.add('correct'); solved.add(d.dataset.key); stats.correct++; stats.streak++; beep(820,80,'triangle',.03); if(solved.size===pairs.length){ fireConfetti(); setTimeout(runMatch, 500); } }
+function runMatch(){
+  const grid=document.createElement('div'); grid.className='choices'; const stage=$('#stage'); stage.innerHTML=''; stage.appendChild(grid);
+  const pairs=shuffle([...CODES]).slice(0,8); const left=pairs.map(p=>({t:p.c,k:p.c,side:'L'})); const right=shuffle(pairs.map(p=>({t:p.m,k:p.c,side:'R'}))); const items=shuffle([...left,...right]); let sel=null; let solved=new Set(); setProgress(0,1); setFeed('DISPATCH: Pair codes to clear the board.');
+  items.forEach(it=>{ const d=document.createElement('div'); d.className='choice'; d.textContent=it.t; d.dataset.key=it.k; d.dataset.side=it.side; d.onclick=()=>{ if(solved.has(d.dataset.key)) return; if(!sel){ sel=d; d.style.outline='2px solid var(--accent)'; return; } if(sel===d){ sel.style.outline=''; sel=null; return; } stats.seen++; const ok=(sel.dataset.key===d.dataset.key && sel.dataset.side!==d.dataset.side);
+      if(ok){ d.classList.add('correct'); sel.classList.add('correct'); solved.add(d.dataset.key); stats.correct++; stats.streak++; beep(820,80,'triangle',.03); if(solved.size===pairs.length){ fireConfetti(); setTimeout(runMatch,500); } }
       else { d.classList.add('wrong'); sel.classList.add('wrong'); stats.streak=0; beep(200,120,'sawtooth',.03); setTimeout(()=>{ d.classList.remove('wrong'); sel.classList.remove('wrong'); sel.style.outline=''; sel=null; },260); }
       if(stats.streak>(stats.alltime||0)) stats.alltime=stats.streak; setStats(); };
     grid.appendChild(d);
   });
 }
-
-// ===== SPEED ROUND (30s) =====
-function runSpeed(){ let time=30, score=0, i=0, qs=shuffle([...CODES]); const stage=$('#stage'); setFeed('DISPATCH: Code blitz! You have 30 seconds.');
-  const timer = setInterval(()=>{ time--; header(); if(time<=0){ clearInterval(timer); end(); } },1000);
+function runSpeed(){
+  let time=30, score=0, i=0, qs=shuffle([...CODES]); const stage=$('#stage'); setFeed('DISPATCH: Code blitz! You have 30 seconds.');
+  const timer=setInterval(()=>{ time--; header(); if(time<=0){ clearInterval(timer); end(); } },1000);
   function header(){ $('#gTitle').textContent = `Speed Round — ${time}s`; }
   render(); header();
   function render(){ const q=qs[i%qs.length]; stage.innerHTML=`
     <div class="prompt">${q.c}</div>
     <div class="choices" id="box"></div>`; const opts=shuffle([q, ...shuffle(CODES.filter(x=>x!==q)).slice(0,3)]).map(o=>o.m); const box=$('#box'); box.innerHTML=''; opts.forEach((txt,idx)=>{ const d=document.createElement('div'); d.className='choice'; d.textContent=txt; d.onclick=()=>pick(txt===q.m, d, q.m); box.appendChild(d); d.setAttribute('data-key', idx+1); }); }
-  function pick(ok, el, correct){ stats.seen++; if(ok){ stats.correct++; stats.streak++; score++; el.classList.add('correct'); beep(900,60,'square',.03); } else { stats.streak=0; el.classList.add('wrong'); beep(220,90,'sawtooth',.03);} if(stats.streak>(stats.alltime||0)) stats.alltime=stats.streak; setStats(); i++; render(); }
+  function pick(ok, el){ stats.seen++; if(ok){ stats.correct++; stats.streak++; score++; el.classList.add('correct'); beep(900,60,'square',.03); } else { stats.streak=0; el.classList.add('wrong'); beep(220,90,'sawtooth',.03);} if(stats.streak>(stats.alltime||0)) stats.alltime=stats.streak; setStats(); i++; render(); }
   function end(){ stage.innerHTML=`<div class="prompt">Time! You scored <b>${score}</b>. Press <span class="kbd">R</span> to retry.</div>`; fireConfetti(); }
   document.onkeydown=(e)=>{ if(mode!=='speed') return; const idx=parseInt(e.key)-1; const box=$('#box'); if(box && idx>=0 && idx<box.children.length){ box.children[idx].click(); } };
 }
-
-// ===== DAILY CHALLENGE (seed by date) =====
-function runDaily(){ const seed = parseInt(new Date().toISOString().slice(0,10).replace(/-/g,''),10); let qs=seededShuffle([...CODES], seed).slice(0,10), i=0, locked=false; const stage=$('#stage'); setFeed('DISPATCH: Daily deck loaded. Compare scores with friends.');
+function runDaily(){
+  const seed=parseInt(new Date().toISOString().slice(0,10).replace(/-/g,''),10);
+  let qs=seededShuffle([...CODES],seed).slice(0,10), i=0, locked=false; const stage=$('#stage'); setFeed('DISPATCH: Daily deck loaded. Compare scores with friends.');
   render(); function render(){ const q=qs[i]; stage.innerHTML=`
     <div class="prompt">Daily: What does <span style="color:var(--accent)">${q.c}</span> mean?</div>
     <div class="choices" id="box"></div>
     <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:12px">
       <button class="btn ghost" id="restartQ">New Daily</button>
       <button class="btn" id="next">Next</button>
-    </div>`; const opts=seededShuffle([q, ...seededShuffle(CODES.filter(x=>x!==q), seed).slice(0,3)], seed).map(o=>o.m); const box=$('#box'); box.innerHTML=''; locked=false; opts.forEach((txt,idx)=>{ const d=document.createElement('div'); d.className='choice'; d.textContent=txt; d.onclick=()=>pick(txt===q.m, d, q.m); box.appendChild(d); d.setAttribute('data-key', idx+1); }); $('#next').onclick=next; $('#restartQ').onclick=()=>runDaily(); setProgress(i, qs.length); }
+    </div>`; const opts=seededShuffle([q, ...seededShuffle(CODES.filter(x=>x!==q),seed).slice(0,3)],seed).map(o=>o.m); const box=$('#box'); box.innerHTML=''; locked=false;
+    opts.forEach((txt,idx)=>{ const d=document.createElement('div'); d.className='choice'; d.textContent=txt; d.onclick=()=>pick(txt===q.m,d,q.m); box.appendChild(d); d.setAttribute('data-key', idx+1); }); $('#next').onclick=next; $('#restartQ').onclick=()=>runDaily(); setProgress(i,qs.length); }
   function pick(ok, el, correct){ if(locked) return; locked=true; stats.seen++; if(ok){ el.classList.add('correct'); stats.correct++; stats.streak++; beep(880,90,'square',.03); } else { el.classList.add('wrong'); $$('#box .choice').forEach(x=>{ if(x.textContent===correct) x.classList.add('correct'); }); stats.streak=0; beep(220,120,'sawtooth',.03);} if(stats.streak>(stats.alltime||0)) stats.alltime=stats.streak; setStats(); }
-  function next(){ if(i<qs.length-1){ i++; render(); } else { stage.innerHTML = `<div class="prompt">Daily complete. Come back tomorrow.</div>`; fireConfetti(); }
-}
-
-// ===== CASE LAW, CONTRABAND, NEGOTIATIONS, WEAPONS, DRUGS (unchanged logic, with feed) =====
+  function next(){ if(i<qs.length-1){ i++; render(); } else { stage.innerHTML=`<div class="prompt">Daily complete. Come back tomorrow.</div>`; fireConfetti(); } }
 function runCase(){ let qs=shuffle([...CASES]).slice(0,10), i=0, locked=false; const stage=$('#stage');
   render(); function render(){ const q=qs[i]; setFeed('DISPATCH: Legal review — identify the precedent.'); stage.innerHTML=`
     <div class="prompt">${q.sum}</div>
@@ -461,35 +468,32 @@ function runCase(){ let qs=shuffle([...CASES]).slice(0,10), i=0, locked=false; c
     <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:12px">
       <button class="btn ghost" id="restartQ">Restart</button>
       <button class="btn" id="next">Next</button>
-    </div>`; const opts=shuffle([q,...shuffle(CASES.filter(x=>x!==q)).slice(0,3)]).map(o=>o.name); const box=$('#box'); box.innerHTML=''; locked=false; opts.forEach(txt=>{ const d=document.createElement('div'); d.className='choice'; d.textContent=txt; d.onclick=()=>pick(txt===q.name, d, q.name); box.appendChild(d); }); $('#next').onclick=next; $('#restartQ').onclick=()=>runCase(); setProgress(i, qs.length); }
+    </div>`; const opts=shuffle([q,...shuffle(CASES.filter(x=>x!==q)).slice(0,3)]).map(o=>o.name); const box=$('#box'); box.innerHTML=''; locked=false; opts.forEach(txt=>{ const d=document.createElement('div'); d.className='choice'; d.textContent=txt; d.onclick=()=>pick(txt===q.name,d,q.name); box.appendChild(d); }); $('#next').onclick=next; $('#restartQ').onclick=()=>runCase(); setProgress(i,qs.length); }
   function pick(ok, el, correct){ if(locked) return; locked=true; stats.seen++; if(ok){ el.classList.add('correct'); stats.correct++; stats.streak++; beep(880,90,'square',.03); fireConfetti(); } else { el.classList.add('wrong'); $$('#box .choice').forEach(x=>{ if(x.textContent===correct) x.classList.add('correct'); }); stats.streak=0; beep(220,120,'sawtooth',.03);} if(stats.streak>(stats.alltime||0)) stats.alltime=stats.streak; setStats(); }
   function next(){ if(i<qs.length-1){ i++; render(); } else { runCase(); } }
 }
-
-function runContra(){ const pool=[...CONTRA_YES.map(n=>({name:n, yes:true})), ...CONTRA_NO.map(n=>({name:n, yes:false}))]; let qs=shuffle(pool).slice(0,10), i=0, locked=false; const stage=$('#stage');
+function runContra(){ const pool=[...CONTRA_YES.map(n=>({name:n,yes:true})), ...CONTRA_NO.map(n=>({name:n,yes:false}))]; let qs=shuffle(pool).slice(0,10), i=0, locked=false; const stage=$('#stage');
   render(); function render(){ const q=qs[i]; setFeed('DISPATCH: Search & Seizure call — seize or no?'); stage.innerHTML=`
     <div class="prompt">Would you confiscate <span style="color:var(--accent)">${q.name}</span>?</div>
     <div class="choices" id="box"></div>
     <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:12px">
       <button class="btn ghost" id="restartQ">Restart</button>
       <button class="btn" id="next">Next</button>
-    </div>`; const box=$('#box'); box.innerHTML=''; locked=false; ['Yes','No'].forEach(ans=>{ const d=document.createElement('div'); d.className='choice'; d.textContent=ans; d.onclick=()=>pick((ans==='Yes')===q.yes, d, q.yes?'Yes':'No'); box.appendChild(d); }); $('#next').onclick=next; $('#restartQ').onclick=()=>runContra(); setProgress(i, qs.length); }
+    </div>`; const box=$('#box'); box.innerHTML=''; locked=false; ['Yes','No'].forEach(ans=>{ const d=document.createElement('div'); d.className='choice'; d.textContent=ans; d.onclick=()=>pick((ans==='Yes')===q.yes,d,q.yes?'Yes':'No'); box.appendChild(d); }); $('#next').onclick=next; $('#restartQ').onclick=()=>runContra(); setProgress(i,qs.length); }
   function pick(ok, el, correct){ if(locked) return; locked=true; stats.seen++; if(ok){ el.classList.add('correct'); stats.correct++; stats.streak++; beep(860,90,'square',.03); } else { el.classList.add('wrong'); $$('#box .choice').forEach(x=>{ if(x.textContent===correct) x.classList.add('correct'); }); stats.streak=0; beep(220,120,'sawtooth',.03);} if(stats.streak>(stats.alltime||0)) stats.alltime=stats.streak; setStats(); }
   function next(){ if(i<qs.length-1){ i++; render(); } else { runContra(); } }
 }
-
 function runNeg(){ let step=0, locked=false; const stage=$('#stage');
-  render(); function render(){ const prompt = step===0? 'What is the FIRST step?' : `What comes AFTER: "${STEPS[step-1]}"?`; setFeed('DISPATCH: Negotiation sequence training.'); stage.innerHTML=`
+  render(); function render(){ const prompt= step===0 ? 'What is the FIRST step?' : `What comes AFTER: "${STEPS[step-1]}"?`; setFeed('DISPATCH: Negotiation sequence training.'); stage.innerHTML=`
     <div class="prompt">${prompt}</div>
     <div class="choices" id="box"></div>
     <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:12px">
       <button class="btn ghost" id="restartQ">Restart</button>
       <button class="btn" id="next">Next</button>
-    </div>`; const opts=shuffle([STEPS[step], ...shuffle(STEPS.filter((_,i)=>i!==step)).slice(0,3)]); const box=$('#box'); box.innerHTML=''; locked=false; opts.forEach(txt=>{ const d=document.createElement('div'); d.className='choice'; d.textContent=txt; d.onclick=()=>pick(txt===STEPS[step], d, STEPS[step]); box.appendChild(d); }); $('#next').onclick=next; $('#restartQ').onclick=()=>runNeg(); setProgress(step, STEPS.length); }
+    </div>`; const opts=shuffle([STEPS[step],...shuffle(STEPS.filter((_,i)=>i!==step)).slice(0,3)]); const box=$('#box'); box.innerHTML=''; locked=false; opts.forEach(txt=>{ const d=document.createElement('div'); d.className='choice'; d.textContent=txt; d.onclick=()=>pick(txt===STEPS[step],d,STEPS[step]); box.appendChild(d); }); $('#next').onclick=next; $('#restartQ').onclick=()=>runNeg(); setProgress(step,STEPS.length); }
   function pick(ok, el, correct){ if(locked) return; locked=true; stats.seen++; if(ok){ el.classList.add('correct'); stats.correct++; stats.streak++; beep(900,90,'square',.03); if(step===STEPS.length-1) fireConfetti(); } else { el.classList.add('wrong'); $$('#box .choice').forEach(x=>{ if(x.textContent===correct) x.classList.add('correct'); }); stats.streak=0; beep(220,120,'sawtooth',.03);} if(stats.streak>(stats.alltime||0)) stats.alltime=stats.streak; setStats(); }
   function next(){ if(step<STEPS.length-1){ step++; render(); } else { runNeg(); } }
 }
-
 function runWeap(){ const weapons=Object.keys(WEAPON_CLASSES); let qs=shuffle(weapons).slice(0,10), i=0, locked=false; const stage=$('#stage');
   render(); function render(){ const name=qs[i]; const answer=WEAPON_CLASSES[name]; setFeed('DISPATCH: Weapon classification ID.'); stage.innerHTML=`
     <div class="prompt">What class is <span style="color:var(--accent)">"${name}"</span>?</div>
@@ -497,11 +501,10 @@ function runWeap(){ const weapons=Object.keys(WEAPON_CLASSES); let qs=shuffle(we
     <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:12px">
       <button class="btn ghost" id="restartQ">Restart</button>
       <button class="btn" id="next">Next</button>
-    </div>`; const opts=shuffle(['Class 2 Weapon','Class 3 Weapon','Class 4 Weapon','Class 5 Weapon']); const box=$('#box'); box.innerHTML=''; locked=false; opts.forEach(txt=>{ const d=document.createElement('div'); d.className='choice'; d.textContent=txt; d.onclick=()=>pick(txt===answer, d, answer); box.appendChild(d); }); $('#next').onclick=next; $('#restartQ').onclick=()=>runWeap(); setProgress(i, qs.length); }
+    </div>`; const opts=shuffle(['Class 2 Weapon','Class 3 Weapon','Class 4 Weapon','Class 5 Weapon']); const box=$('#box'); box.innerHTML=''; locked=false; opts.forEach(txt=>{ const d=document.createElement('div'); d.className='choice'; d.textContent=txt; d.onclick=()=>pick(txt===answer,d,answer); box.appendChild(d); }); $('#next').onclick=next; $('#restartQ').onclick=()=>runWeap(); setProgress(i,qs.length); }
   function pick(ok, el, correct){ if(locked) return; locked=true; stats.seen++; if(ok){ el.classList.add('correct'); stats.correct++; stats.streak++; beep(880,90,'square',.03); } else { el.classList.add('wrong'); $$('#box .choice').forEach(x=>{ if(x.textContent===correct) x.classList.add('correct'); }); stats.streak=0; beep(220,120,'sawtooth',.03);} if(stats.streak>(stats.alltime||0)) stats.alltime=stats.streak; setStats(); }
   function next(){ if(i<qs.length-1){ i++; render(); } else { runWeap(); } }
 }
-
 function runDrug(){ const drugs=Object.keys(DRUG_CLASSES); let qs=shuffle(drugs).slice(0,10), i=0, locked=false; const stage=$('#stage');
   render(); function render(){ const name=qs[i]; const answer=DRUG_CLASSES[name]; setFeed('DISPATCH: Controlled substance classification.'); stage.innerHTML=`
     <div class="prompt">Which category is <span style="color:var(--accent)">"${name}"</span>?</div>
@@ -509,29 +512,25 @@ function runDrug(){ const drugs=Object.keys(DRUG_CLASSES); let qs=shuffle(drugs)
     <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:12px">
       <button class="btn ghost" id="restartQ">Restart</button>
       <button class="btn" id="next">Next</button>
-    </div>`; const opts=shuffle(['Class A Substance','Class B Substance','Narcotics']); const box=$('#box'); box.innerHTML=''; locked=false; opts.forEach(txt=>{ const d=document.createElement('div'); d.className='choice'; d.textContent=txt; d.onclick=()=>pick(txt===answer, d, answer); box.appendChild(d); }); $('#next').onclick=next; $('#restartQ').onclick=()=>runDrug(); setProgress(i, qs.length); }
+    </div>`; const opts=shuffle(['Class A Substance','Class B Substance','Narcotics']); const box=$('#box'); box.innerHTML=''; locked=false; opts.forEach(txt=>{ const d=document.createElement('div'); d.className='choice'; d.textContent=txt; d.onclick=()=>pick(txt===answer,d,answer); box.appendChild(d); }); $('#next').onclick=next; $('#restartQ').onclick=()=>runDrug(); setProgress(i,qs.length); }
   function pick(ok, el, correct){ if(locked) return; locked=true; stats.seen++; if(ok){ el.classList.add('correct'); stats.correct++; stats.streak++; beep(880,90,'square',.03); } else { el.classList.add('wrong'); $$('#box .choice').forEach(x=>{ if(x.textContent===correct) x.classList.add('correct'); }); stats.streak=0; beep(220,120,'sawtooth',.03);} if(stats.streak>(stats.alltime||0)) stats.alltime=stats.streak; setStats(); }
   function next(){ if(i<qs.length-1){ i++; render(); } else { runDrug(); } }
 }
-
-// ===== SCENARIOS with After‑Action Report =====
-function runScenarios(){ let sIndex=0, step=0, corrects=0; const stage=$('#stage');
-  const s = SCENARIOS[sIndex]; setFeed(s.feed);
-  render();
-  function render(){ const cur = s.steps[step]; stage.innerHTML=`
+function runScenarios(){ let sIndex=0, step=0, corrects=0; const stage=$('#stage'); const s=SCENARIOS[sIndex]; setFeed(s.feed);
+  render(); function render(){ const cur=s.steps[step]; stage.innerHTML=`
     <div class="prompt">${cur.prompt}</div>
     <div class="choices" id="box"></div>
     <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:12px">
       <button class="btn ghost" id="restartQ">Restart</button>
       <button class="btn" id="next">Next</button>
-    </div>`; const box=$('#box'); box.innerHTML=''; let opts=[]; if(cur.type==='mc'){ opts = shuffle(cur.options); } if(cur.type==='yn'){ opts = ['Yes','No']; }
-    opts.forEach(txt=>{ const d=document.createElement('div'); d.className='choice'; d.textContent=txt; d.onclick=()=>pick(txt===cur.correct || (cur.type==='yn' && ((txt==='Yes')===cur.correct)), d, cur.correct); box.appendChild(d); });
-    $('#next').onclick=next; $('#restartQ').onclick=()=>runScenarios(); setProgress(step, s.steps.length);
+    </div>`; const box=$('#box'); box.innerHTML=''; let opts=[]; if(cur.type==='mc'){ opts=shuffle(cur.options); } if(cur.type==='yn'){ opts=['Yes','No']; }
+    opts.forEach(txt=>{ const d=document.createElement('div'); d.className='choice'; d.textContent=txt; const ok=(txt===cur.correct) || (cur.type==='yn' && ((txt==='Yes')===cur.correct)); d.onclick=()=>pick(ok,d,cur.correct); box.appendChild(d); });
+    $('#next').onclick=next; $('#restartQ').onclick=()=>runScenarios(); setProgress(step,s.steps.length);
   }
-  function pick(ok, el, correct){ stats.seen++; if(ok){ el.classList.add('correct'); stats.correct++; stats.streak++; corrects++; beep(900,90,'square',.03);} else { el.classList.add('wrong'); $$('#box .choice').forEach(x=>{ if(x.textContent===String(correct) || x.textContent===correct) x.classList.add('correct'); }); stats.streak=0; beep(220,120,'sawtooth',.03);} if(stats.streak>(stats.alltime||0)) stats.alltime=stats.streak; setStats(); const cur=s.steps[step]; const teach=document.createElement('div'); teach.className='choice info'; teach.textContent = 'Why: ' + cur.teach; $('#stage').appendChild(teach); }
+  function pick(ok, el, correct){ stats.seen++; if(ok){ el.classList.add('correct'); stats.correct++; stats.streak++; corrects++; beep(900,90,'square',.03); } else { el.classList.add('wrong'); $$('#box .choice').forEach(x=>{ if(x.textContent===String(correct) || x.textContent===correct) x.classList.add('correct'); }); stats.streak=0; beep(220,120,'sawtooth',.03); } if(stats.streak>(stats.alltime||0)) stats.alltime=stats.streak; setStats(); const cur=s.steps[step]; const teach=document.createElement('div'); teach.className='choice info'; teach.textContent='Why: '+cur.teach; $('#stage').appendChild(teach); }
   function next(){ if(step<s.steps.length-1){ step++; render(); } else { afterAction(); } }
-  function afterAction(){ fireConfetti(); const total=s.steps.length; const pass = corrects===total; stage.innerHTML = `
-    <div class="prompt">After‑Action Report</div>
+  function afterAction(){ fireConfetti(); const total=s.steps.length; const pass=corrects===total; stage.innerHTML=`
+    <div class="prompt">After-Action Report</div>
     <div class="choices">
       <div class="choice ${pass?'correct':'wrong'}">Result: ${corrects}/${total} correct — ${pass?'PASS':'REVIEW'}</div>
       ${s.steps.map(st=>`<div class="choice">${st.prompt}<br><small>Answer: <b>${st.type==='yn'?(st.correct?'Yes':'No'):st.correct}</b> — ${st.teach}</small></div>`).join('')}
@@ -541,9 +540,11 @@ function runScenarios(){ let sIndex=0, step=0, corrects=0; const stage=$('#stage
     </div>`; $('#again').onclick=()=>runScenarios(); }
 }
 
-// INIT
+/* Init */
 renderGlobalStats(); renderRef(); showHome();
-});
+
+}); // DOMContentLoaded
 </script>
 </body>
 </html>
+
