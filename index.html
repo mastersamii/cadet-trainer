@@ -423,7 +423,7 @@ function runQuiz(){
     document.onkeydown=(e)=>{ if(mode!=='quiz'||locked) return; const idx=parseInt(e.key)-1; if(idx>=0&&idx<box.children.length){ box.children[idx].click(); } if(e.key==='n') next(); };
   }
   function pick(ok, el, correct){ if(locked) return; locked=true; stats.seen++; if(ok){ el.classList.add('correct'); stats.correct++; stats.streak++; beep(880,90,'square',.03); fireConfetti(); } else { el.classList.add('wrong'); $$('#box .choice').forEach(x=>{ if(x.textContent===correct) x.classList.add('correct'); }); stats.streak=0; beep(220,120,'sawtooth',.03);} if(stats.streak>(stats.alltime||0)) stats.alltime=stats.streak; setStats(); }
-  function next(){ if(i<qs.length-1){ i++; render(); } else { runQuiz(); } }
+  function next(){ if(i<qs.length-1){ i++; render(); } else { runQuiz(); } } }
 }
 function runMatch(){
   const grid=document.createElement('div'); grid.className='choices'; const stage=$('#stage'); stage.innerHTML=''; stage.appendChild(grid);
@@ -546,5 +546,6 @@ renderGlobalStats(); renderRef(); showHome();
 </script>
 </body>
 </html>
+
 
 
