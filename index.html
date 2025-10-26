@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Cadet Trainer</title>
+<title>Cadet Trainer v3 — Patrol Academy</title>
 <style>
   :root{
     --bg:#070a14; --panel:#0f1528; --card:#0b1122; --ink:#e9ecff; --muted:#a7b0c4;
@@ -225,6 +225,8 @@ background-repeat:no-repeat;background-attachment:fixed;opacity:.9}
   <canvas id="confetti" class="hidden"></canvas>
 
 <script>
+// DOM ready guard wraps all JS so elements exist before we bind listeners
+document.addEventListener('DOMContentLoaded', () => {
 // ===== DATA (same sets) =====
 const CODES=[
   {c:'Code 0', m:'Game Crash'},{c:'Code 1', m:'Routing Call (No Lights | No Sirens)'},{c:'Code 2', m:'Routing Call (Lights | No Sirens | Airhorn at Intersections)'},{c:'Code 3', m:'Emergency (Lights | Sirens)'},{c:'Code 4', m:'All Clear'},{c:'Code 5', m:'Initiate Felony Stop'},{c:'Code 6', m:'Investigating the Area'},{c:'10-1', m:'Unable to Copy'},{c:'10-2', m:'Loud and Clear'},{c:'10-3', m:'Stop Radio Chatter'},{c:'10-4', m:'Acknowledgment'},{c:'10-5', m:'Ballistics Testing'},{c:'10-6', m:'Busy, unless urgent'},{c:'10-7', m:'Out of Service'},{c:'10-8', m:'Back in Service'},{c:'10-9', m:'Repeat'},{c:'10-10', m:'Negative'},{c:'10-11', m:'Traffic Stop'},{c:'10-13', m:'Shots Fired'},{c:'10-14', m:'Officer Down'},{c:'10-15', m:'Suspect in Custody'},{c:'10-19', m:'Return to Station'},{c:'10-20', m:'Location'},{c:'10-22', m:'Disregard'},{c:'10-23', m:'Arrived at the Scene'},{c:'10-25', m:'Report in Person'},{c:'10-28', m:'Vehicle Registration'},{c:'10-29', m:'Warrant Check'},{c:'10-31', m:'Crime in Progress'},{c:'10-32', m:'Person with a Gun'},{c:'10-33', m:'Drug Sales'},{c:'10-39', m:'Status Report'},{c:'10-41', m:'On Duty'},{c:'10-42', m:'Off Duty'},{c:'10-47', m:'Injured Person'},{c:'10-50', m:'Vehicle Accident'},{c:'10-51', m:'Requesting a Tow Truck'},{c:'10-52', m:'EMS Needed'},{c:'10-53', m:'Requesting Supervisor'},{c:'10-55', m:'Intoxicated Driver'},{c:'10-56', m:'Intoxicated Pedestrian'},{c:'10-57', m:'Hit & Run'},{c:'10-60', m:'Stolen Vehicle'},{c:'10-66', m:'Suspicious Person'},{c:'10-67', m:'Carjacking (GTA)'},{c:'10-71', m:'Shooting'},{c:'10-72', m:'Hostage Situation'},{c:'10-76', m:'En-route'},{c:'10-77', m:'Need Backup (Non-Emergency)'},{c:'10-78', m:'Need Backup (Emergency)'},{c:'10-79', m:'ETA (Estimated Time of Arrival)'},{c:'10-80', m:'Vehicle Pursuit'},{c:'10-81', m:'Foot Pursuit'},{c:'10-90', m:'Robbery in Progress'},{c:'10-91', m:'Transport Unit'},{c:'10-94', m:'Reckless Driver'},{c:'10-99', m:'Officer in Distress'}
@@ -294,7 +296,7 @@ $('#cb').addEventListener('click',()=>{ const cur=document.body.getAttribute('da
 $('#od').addEventListener('click',()=>{ const cur=document.body.getAttribute('data-font'); const nxt = cur==='od'?'' : 'od'; document.body.setAttribute('data-font', nxt); });
 
 // Themes
-$$('.chip[data-theme]').forEach(ch=>ch.addEventListener('click',()=>{ $$('.chip').forEach(x=>x.classList.remove('sel')); ch.classList.add('sel'); document.body.setAttribute('data-theme', ch.dataset.theme); }));
+$$('.chip[data-theme]').forEach(ch=>ch.addEventListener('click',()=>{ $$('.chip[data-theme]').forEach(x=>x.classList.remove('sel')); ch.classList.add('sel'); document.body.setAttribute('data-theme', ch.dataset.theme); }));
 
 // Quick Reference Drawer
 $('#openRef').onclick=()=>refOpen(true); $('#closeRef').onclick=()=>refOpen(false); $('#help').onclick=()=>refOpen(true);
@@ -311,8 +313,9 @@ function renderLiveStats(){ const g=$('#liveStats'); if(!g) return; g.innerHTML=
 function setProgress(now,total){ const pct = total? Math.round((now/total)*100) : 0; $('#progress').style.width = pct + '%'; }
 
 // Confetti
-const conf = $('#confetti'); const cctx = conf.getContext('2d');
-function fireConfetti(){ const W=conf.width=window.innerWidth; const H=conf.height=window.innerHeight; conf.classList.remove('hidden'); const pieces=[...Array(100)].map(()=>({x:Math.random()*W,y:-20+Math.random()*40, s:3+Math.random()*6, v:2+Math.random()*4, a:Math.random()*Math.PI})); let t=0; (function step(){ cctx.clearRect(0,0,W,H); pieces.forEach(p=>{ p.y+=p.v; p.x+=Math.sin((t+p.a)/10)*2; cctx.fillStyle=`hsl(${(t*3+p.x)%360} 90% 60%)`; cctx.fillRect(p.x,p.y,p.s,p.s); }); t++; if(t<120) requestAnimationFrame(step); else conf.classList.add('hidden'); })(); }
+const conf = $('#confetti');
+let cctx = conf ? conf.getContext('2d') : null;
+function fireConfetti(){ if(!conf || !cctx) return;  const W=conf.width=window.innerWidth; const H=conf.height=window.innerHeight; conf.classList.remove('hidden'); const pieces=[...Array(100)].map(()=>({x:Math.random()*W,y:-20+Math.random()*40, s:3+Math.random()*6, v:2+Math.random()*4, a:Math.random()*Math.PI})); let t=0; (function step(){ cctx.clearRect(0,0,W,H); pieces.forEach(p=>{ p.y+=p.v; p.x+=Math.sin((t+p.a)/10)*2; cctx.fillStyle=`hsl(${(t*3+p.x)%360} 90% 60%)`; cctx.fillRect(p.x,p.y,p.s,p.s); }); t++; if(t<120) requestAnimationFrame(step); else conf.classList.add('hidden'); })(); }
 
 // Dispatcher feed helper
 function setFeed(text){ $('#feed').innerHTML = text ? text : '' }
@@ -540,6 +543,7 @@ function runScenarios(){ let sIndex=0, step=0, corrects=0; const stage=$('#stage
 
 // INIT
 renderGlobalStats(); renderRef(); showHome();
+});
 </script>
 </body>
 </html>
